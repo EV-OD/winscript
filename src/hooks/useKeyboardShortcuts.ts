@@ -7,17 +7,22 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 export function useKeyboardShortcuts() {
   onMount(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Ctrl+W to close app
-      if (event.ctrlKey && event.key === 'w') {
+      console.log('Key pressed:', event.key, 'Ctrl:', event.ctrlKey); // Debug log
+      
+      // Ctrl+W to close app (check both cases)
+      if (event.ctrlKey && (event.key === 'w' || event.key === 'W')) {
         event.preventDefault();
-        getCurrentWindow().close();
+        event.stopPropagation();
+        console.log('Closing window with Ctrl+W');
+        getCurrentWindow().close().catch(err => console.error('Failed to close window:', err));
       }
       
-      // Add more shortcuts here as needed
-      // Ctrl+Q for quit
-      if (event.ctrlKey && event.key === 'q') {
+      // Ctrl+Q for quit (check both cases)
+      if (event.ctrlKey && (event.key === 'q' || event.key === 'Q')) {
         event.preventDefault();
-        getCurrentWindow().close();
+        event.stopPropagation();
+        console.log('Closing window with Ctrl+Q');
+        getCurrentWindow().close().catch(err => console.error('Failed to close window:', err));
       }
     };
 
