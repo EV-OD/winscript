@@ -1,6 +1,6 @@
-import { createSignal, Component, Show } from 'solid-js';
-import { ArgsInput, ThemedSelect, HtmlRenderer } from '../ThemedComponents';
+import { createSignal, Component, Show, For } from 'solid-js';
 import { UIService } from '../services/UIService';
+import { HtmlRenderer } from '../ThemedComponents';
 
 export type UIRequest = {
   id: string;
@@ -61,55 +61,88 @@ export const UIController: Component<UIControllerProps> = (props) => {
     console.log('Global showUIRequest called:', request);
   };
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
-    <div style="padding: 2rem;">
+    <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column;">
       <Show when={props.request}>
-        <div class="ui-request-container">
-          <h3>{props.request?.message}</h3>
-          
-          <Show when={props.request?.type === 'input'}>
-            <ArgsInput
+        <Show when={props.request?.type === 'input'}>
+          {/* Input Interface */}
+          <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c;">
+            <input
+              type="text"
+              placeholder={props.request?.message || "Enter your response..."}
               value={inputValue()}
-              onChange={setInputValue}
-              placeholder="Enter your response..."
+              onInput={(e) => setInputValue(e.currentTarget.value)}
+              onKeyDown={handleKeyDown}
+              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+              autofocus
             />
-          </Show>
-
-          <Show when={props.request?.type === 'select'}>
-            <ThemedSelect
-              options={props.request?.options || []}
-              value={selectedValue()}
-              onChange={setSelectedValue}
-              placeholder="Search and select..."
-            />
-          </Show>
-
-          <Show when={props.request?.type === 'html'}>
-            <HtmlRenderer html={props.request?.html_content || ''} />
-          </Show>
-
-          <div style="margin-top: 1rem;">
-            <button 
-              onClick={handleSubmit}
-              style="padding: 0.5rem 1rem; background: #eebbc3; color: #232946; border: none; border-radius: 6px; cursor: pointer;"
-            >
-              Submit
-            </button>
           </div>
-        </div>
+        </Show>
+
+        <Show when={props.request?.type === 'select'}>
+          {/* Select Interface */}
+          <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c;">
+            <input
+              type="text"
+              placeholder={props.request?.message || "Select category or note"}
+              value={selectedValue()}
+              onInput={(e) => setSelectedValue(e.currentTarget.value)}
+              onKeyDown={handleKeyDown}
+              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+              autofocus
+            />
+          </div>
+
+          {/* Options List */}
+          <div style="flex: 1; overflow-y: auto;">
+            <For each={props.request?.options || []}>
+              {(option, index) => (
+                <div
+                  style={{
+                    'padding': '12px 20px',
+                    'border-bottom': '1px solid #2d2d2d',
+                    'cursor': 'pointer',
+                    'transition': 'background-color 0.1s ease',
+                    'background': selectedValue() === option ? '#094771' : 'transparent',
+                    'display': 'flex',
+                    'align-items': 'center'
+                  }}
+                  onClick={() => {
+                    setSelectedValue(option);
+                    handleSubmit();
+                  }}
+                  onMouseEnter={() => setSelectedValue(option)}
+                >
+                  <span style="margin-right: 12px; color: #ffd700;">📁</span>
+                  <div style="font-size: 14px; color: #cccccc; font-weight: 500;">
+                    {option}
+                  </div>
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
+
+        <Show when={props.request?.type === 'html'}>
+          {/* HTML Display */}
+          <div style="flex: 1; overflow-y: auto; padding: 20px;">
+            <HtmlRenderer html={props.request?.html_content || ''} />
+          </div>
+        </Show>
       </Show>
 
       <Show when={!props.request}>
-        <div style="text-align: center; color: #eebbc3;">
-          <h2>Script Running...</h2>
-          <p>Waiting for next input from the script...</p>
-          <div style="margin-top: 2rem;">
-            <button 
-              onClick={() => window.location.reload()}
-              style="padding: 0.5rem 1rem; background: #d64570; color: white; border: none; border-radius: 6px; cursor: pointer;"
-            >
-              Cancel Script & Go Back
-            </button>
+        <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; align-items: center; justify-content: center; color: #858585;">
+          <div style="text-align: center;">
+            <div style="font-size: 18px; margin-bottom: 12px;">Script Running...</div>
+            <div style="font-size: 14px; opacity: 0.7;">Waiting for next input from the script...</div>
           </div>
         </div>
       </Show>
