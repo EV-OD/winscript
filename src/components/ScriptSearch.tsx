@@ -1,102 +1,181 @@
-import { createSignal, Component, Show } from 'solid-js';
-import { Search } from 'lucide-solid';
-import './ScriptSearch.css';
-
-// Dummy script data
-const DUMMY_SCRIPTS = [
-  'File Organizer - Organize files by type and date',
-  'System Cleanup - Clean temporary files and cache',
-  'Backup Manager - Create automated backups',
-  'Network Scanner - Scan network for devices', 
-  'Password Generator - Generate secure passwords',
-  'Image Resizer - Batch resize images',
-  'Log Analyzer - Analyze system logs',
-  'Disk Usage - Check disk space usage',
-  'Process Monitor - Monitor running processes',
-  'Environment Setup - Setup development environment',
-  'Database Backup - Backup database files',
-  'Text Replacer - Find and replace in multiple files'
-];
+import { Component, createSignal, For, onMount, Show } from 'solid-js';
+import { invoke } from '@tauri-apps/api/core';
 
 type ScriptSearchProps = {
-  onScriptSelect?: (script: string) => void;
+  onScriptSelect: (script: string) => void;
+};
+
+type ScriptItem = {
+  id: string;
+  name: string;
+  description: string;
+  category?: string;
 };
 
 export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
-  const [searchValue, setSearchValue] = createSignal('');
-  const [showResults, setShowResults] = createSignal(false);
+  const [searchQuery, setSearchQuery] = createSignal('');
+  const [selectedIndex, setSelectedIndex] = createSignal(0);
+  const [isLoading, setIsLoading] = createSignal(false);
 
+  // Available scripts
+  const scripts: ScriptItem[] = [
+    {
+      id: 'greeting_script',
+      name: 'greeting',
+      description: 'Interactive greeting script with personalized output',
+      category: 'Interactive'
+    },
+    {
+      id: 'html_demo_script', 
+      name: 'html-demo',
+      description: 'HTML demonstration with persistent display',
+      category: 'Demo'
+    }
+  ];
+
+  // Filter scripts based on search query
   const filteredScripts = () => {
-    const query = searchValue().toLowerCase().trim();
-    if (!query) return [];
-    return DUMMY_SCRIPTS.filter(script =>
-      script.toLowerCase().includes(query)
+    const query = searchQuery().toLowerCase();
+    if (!query) return scripts;
+    
+    return scripts.filter(script => 
+      script.name.toLowerCase().includes(query) ||
+      script.description.toLowerCase().includes(query) ||
+      (script.category && script.category.toLowerCase().includes(query))
     );
   };
 
-  const handleInput = (value: string) => {
-    setSearchValue(value);
-    setShowResults(value.trim().length > 0);
-  };
-
-  const handleSelectScript = (script: string) => {
-    setSearchValue(script.split(' - ')[0]); // Set just the script name
-    setShowResults(false);
-    if (props.onScriptSelect) {
-      props.onScriptSelect(script);
+  const handleKeyDown = (event: KeyboardEvent) => {
+    const filtered = filteredScripts();
+    
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        setSelectedIndex(prev => (prev + 1) % filtered.length);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        setSelectedIndex(prev => (prev - 1 + filtered.length) % filtered.length);
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (filtered.length > 0) {
+          handleScriptSelect(filtered[selectedIndex()]);
+        }
+        break;
+      case 'Escape':
+        setSearchQuery('');
+        setSelectedIndex(0);
+        break;
     }
   };
 
-  const handleSearch = () => {
-    const scripts = filteredScripts();
-    if (scripts.length > 0) {
-      handleSelectScript(scripts[0]);
+  const handleScriptSelect = async (script: ScriptItem) => {
+    setIsLoading(true);
+    try {
+      console.log('🔵 ScriptSearch: Executing script:', script.id);
+      
+      // Notify parent component FIRST to show UIController
+      props.onScriptSelect(script.id);
+      
+      // Then call the Rust command
+      await invoke(script.id);
+      
+    } catch (error) {
+      console.error('🔴 ScriptSearch: Failed to execute script:', error);
+      setIsLoading(false);
     }
   };
 
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-    if (e.key === 'Escape') {
-      setShowResults(false);
-    }
+  // Reset selected index when search changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setSelectedIndex(0);
   };
+
+  onMount(() => {
+    // Focus the search input on mount
+    const input = document.getElementById('script-search-input') as HTMLInputElement;
+    if (input) {
+      input.focus();
+    }
+  });
 
   return (
-    <div class="script-search-container">
-      <div class="search-input-wrapper">
-        <input
-          class="script-search-input"
-          type="text"
-          value={searchValue()}
-          onInput={(e) => handleInput(e.currentTarget.value)}
-          onKeyPress={handleKeyPress}
-          onFocus={() => searchValue().trim() && setShowResults(true)}
-          placeholder="Search for scripts..."
-        />
-        <button 
-          class="search-button"
-          onClick={handleSearch}
-          title="Search"
-        >
-          <Search size={20} />
-        </button>
+    <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column;">
+      {/* Search Header */}
+      <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c;">
+        <div style="position: relative; display: flex; align-items: center;">
+          <input
+            id="script-search-input"
+            type="text"
+            placeholder="Search scripts..."
+            value={searchQuery()}
+            onInput={(e) => handleSearchChange(e.currentTarget.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isLoading()}
+            style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+          />
+          <Show when={isLoading()}>
+            <div style="position: absolute; right: 16px; color: #007acc; font-size: 14px;">
+              Running...
+            </div>
+          </Show>
+        </div>
       </div>
 
-      <Show when={showResults() && filteredScripts().length > 0}>
-        <div class="search-results">
-          {filteredScripts().map((script) => (
-            <div
-              class="search-result-item"
-              onClick={() => handleSelectScript(script)}
-            >
-              <div class="script-name">{script.split(' - ')[0]}</div>
-              <div class="script-description">{script.split(' - ')[1]}</div>
-            </div>
-          ))}
-        </div>
-      </Show>
+      {/* Results Container */}
+      <div style="flex: 1; overflow-y: auto;">
+        <Show when={filteredScripts().length > 0} fallback={
+          <div style="padding: 40px 20px; text-align: center; color: #858585;">
+            <div>No scripts found</div>
+            <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Try a different search term</div>
+          </div>
+        }>
+          {/* Results Header */}
+          <div style="padding: 12px 20px 8px; border-bottom: 1px solid #3c3c3c; background: #252526;">
+            <span style="font-size: 12px; color: #858585; text-transform: uppercase; font-weight: 600;">
+              EXACT MATCH
+            </span>
+          </div>
+          
+          {/* Results List */}
+          <div>
+            <For each={filteredScripts()}>
+              {(script, index) => (
+                <div
+                  style={{
+                    'padding': '12px 20px',
+                    'border-bottom': '1px solid #2d2d2d',
+                    'cursor': 'pointer',
+                    'transition': 'background-color 0.1s ease',
+                    'background': index() === selectedIndex() ? '#094771' : 'transparent',
+                    'display': 'flex',
+                    'justify-content': 'space-between',
+                    'align-items': 'flex-start'
+                  }}
+                  onClick={() => handleScriptSelect(script)}
+                  onMouseEnter={() => setSelectedIndex(index())}
+                >
+                  <div>
+                    <div style="font-size: 14px; color: #cccccc; font-weight: 500; margin-bottom: 4px;">
+                      {script.name}
+                    </div>
+                    <div style="font-size: 12px; color: #858585; margin-bottom: 4px;">
+                      {script.description}
+                    </div>
+                  </div>
+                  <Show when={script.category}>
+                    <div style="font-size: 11px; color: #007acc; text-transform: uppercase; font-weight: 600; margin-left: 16px; flex-shrink: 0;">
+                      {script.category}
+                    </div>
+                  </Show>
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
+      </div>
     </div>
   );
 };

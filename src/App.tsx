@@ -1,7 +1,7 @@
 import { Component, createSignal, Show } from "solid-js";
 import "./App.css";
 import { UIController } from "./UIController";
-import { DemoButton, KitDemoButton, GreetingScriptButton, HtmlDemoButton, ScriptSearch } from "./components";
+import { ScriptSearch } from "./components";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useUIEvents } from "./hooks/useUIEvents";
 import type { UIRequest } from "./UIController";
@@ -37,17 +37,8 @@ const App: Component = () => {
 
   return (
     <main class="container">
-      <div style="position: absolute; top: 10px; right: 10px;">
-        <DemoButton />
-        <KitDemoButton />
-        <GreetingScriptButton onScriptStart={() => setShowUIController(true)} />
-        <HtmlDemoButton onScriptStart={() => setShowUIController(true)} />
-      </div>
-
       <Show when={!showUIController() && !currentRequest()}>
-        <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-          <ScriptSearch onScriptSelect={handleScriptSelect} />
-        </div>
+        <ScriptSearch onScriptSelect={handleScriptSelect} />
       </Show>
 
       <Show when={showUIController()}>
