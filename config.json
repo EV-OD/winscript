@@ -1,4 +1,5 @@
 {
     "scriptDir": "./scripts",
-    "kitPath": "./kits"
+    "kitPath": "./kits",
+    "absolutePath": "D:\\projects\\winscript2\\tauri-app\\"
 }

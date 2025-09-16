@@ -9,7 +9,7 @@ export function useKeyboardShortcuts() {
     const handleKeyDown = (event: KeyboardEvent) => {
       console.log('Key pressed:', event.key, 'Ctrl:', event.ctrlKey); // Debug log
       
-      // Ctrl+W to close app (check both cases)
+      // Ctrl+W to close window directly
       if (event.ctrlKey && (event.key === 'w' || event.key === 'W')) {
         event.preventDefault();
         event.stopPropagation();
@@ -17,7 +17,18 @@ export function useKeyboardShortcuts() {
         getCurrentWindow().close().catch(err => console.error('Failed to close window:', err));
       }
       
-      // Ctrl+Q for quit (check both cases)
+      // Q key (without Ctrl) to go back to main screen  
+      if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'q') {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('Handling Q key - going back to main screen');
+        
+        if (window.onScriptComplete) {
+          window.onScriptComplete();
+        }
+      }
+      
+      // Ctrl+Q for quit (force close)
       if (event.ctrlKey && (event.key === 'q' || event.key === 'Q')) {
         event.preventDefault();
         event.stopPropagation();

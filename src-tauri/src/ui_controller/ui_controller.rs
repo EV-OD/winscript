@@ -28,9 +28,13 @@ pub async fn ui_response(
     value: String,
     state: tauri::State<'_, PendingRequests>,
 ) -> Result<(), String> {
+    println!("🟣 ui_response: Called with id: {}, value: {}", id, value);
     let mut pending = state.lock().map_err(|e| e.to_string())?;
     if let Some(sender) = pending.remove(&id) {
+        println!("🟣 ui_response: Found sender for ID, sending response");
         let _ = sender.send(value);
+    } else {
+        println!("🔴 ui_response: No sender found for ID: {}", id);
     }
     Ok(())
 }
@@ -54,7 +58,9 @@ impl UIController {
     }
 
     pub async fn ask_input(&self, message: &str) -> Result<String, String> {
+        println!("🟣 UIController: ask_input called with message: {}", message);
         let id = Uuid::new_v4().to_string();
+        println!("🟣 UIController: Generated request ID: {}", id);
         let (sender, receiver) = oneshot::channel();
 
         // Store the sender for this request
@@ -72,12 +78,23 @@ impl UIController {
         };
 
         // Emit to frontend
+        println!("🟣 UIController: Emitting ui_request event");
         self.app_handle
             .emit("ui_request", &request)
             .map_err(|e| e.to_string())?;
 
         // Wait for response
-        receiver.await.map_err(|_| "Request cancelled".to_string())
+        println!("🟣 UIController: Waiting for response");
+        let result = receiver.await.map_err(|_| "Request cancelled".to_string());
+        println!("🟣 UIController: Received response: {:?}", result);
+        result
+    }
+
+    /// Emit a custom event to the frontend
+    pub fn emit_event<T: serde::Serialize>(&self, event: &str, payload: &T) -> Result<(), String> {
+        self.app_handle
+            .emit(event, payload)
+            .map_err(|e| e.to_string())
     }
 
     pub async fn ask_select(&self, message: &str, options: Vec<String>) -> Result<String, String> {
@@ -108,6 +125,26 @@ impl UIController {
     }
 
     pub async fn show_html(&self, message: &str, html_content: &str) -> Result<(), String> {
+        let id = Uuid::new_v4().to_string();
+
+        let request = UIRequest {
+            id,
+            r#type: "html".to_string(),
+            message: message.to_string(),
+            options: None,
+            html_content: Some(html_content.to_string()),
+        };
+
+        // Emit to frontend
+        self.app_handle
+            .emit("ui_request", &request)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    /// Show HTML content synchronously (fire and forget)
+    pub fn show_html_sync(&self, message: &str, html_content: &str) -> Result<(), String> {
         let id = Uuid::new_v4().to_string();
 
         let request = UIRequest {
