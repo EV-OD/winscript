@@ -19,15 +19,32 @@ fn greet(name: &str) -> String {
 // List all available Rhai scripts
 #[tauri::command]
 async fn list_rhai_scripts() -> Result<Vec<ScriptInfo>, String> {
-    // Use the project root (parent of src-tauri) as the base directory
-    let current_dir = std::env::current_dir()
-        .map_err(|e| format!("Failed to get current directory: {}", e))?;
-    
-    let project_root = if current_dir.file_name().and_then(|n| n.to_str()) == Some("src-tauri") {
-        current_dir.parent().unwrap().to_path_buf()
-    } else {
-        current_dir
+    // Try to get WIN_SCRIPT2_PATH environment variable first
+    let user_scripts_path = match std::env::var("WIN_SCRIPT2_PATH") {
+        Ok(path) => {
+            println!("🟣 Using WIN_SCRIPT2_PATH: {}", path);
+            std::path::PathBuf::from(path)
+        },
+        Err(_) => {
+            // Fallback to current directory logic for development
+            let current_dir = std::env::current_dir()
+                .map_err(|e| format!("Failed to get current directory: {}", e))?;
+            
+            let fallback_path = if current_dir.file_name().and_then(|n| n.to_str()) == Some("src-tauri") {
+                current_dir.parent().unwrap().join("user_scripts")
+            } else {
+                current_dir.join("user_scripts")
+            };
+            
+            println!("🟣 WIN_SCRIPT2_PATH not found, using fallback: {:?}", fallback_path);
+            fallback_path
+        }
     };
+    
+    // ScriptManager expects project root, so get parent of user_scripts
+    let project_root = user_scripts_path.parent()
+        .ok_or_else(|| "Failed to get parent directory of user_scripts".to_string())?
+        .to_path_buf();
     
     let mut script_manager = ScriptManager::new(project_root);
     script_manager.load_scripts().map_err(|e| format!("Failed to load scripts: {}", e))?;
@@ -41,15 +58,32 @@ async fn run_rhai_script(scriptId: String, app_handle: tauri::AppHandle) -> Resu
     // Create Kit instance using the app handle
     let kit = Kit::new(app_handle);
     
-    // Use the project root (parent of src-tauri) as the base directory
-    let current_dir = std::env::current_dir()
-        .map_err(|e| format!("Failed to get current directory: {}", e))?;
-    
-    let project_root = if current_dir.file_name().and_then(|n| n.to_str()) == Some("src-tauri") {
-        current_dir.parent().unwrap().to_path_buf()
-    } else {
-        current_dir
+    // Try to get WIN_SCRIPT2_PATH environment variable first
+    let user_scripts_path = match std::env::var("WIN_SCRIPT2_PATH") {
+        Ok(path) => {
+            println!("🟣 Using WIN_SCRIPT2_PATH: {}", path);
+            std::path::PathBuf::from(path)
+        },
+        Err(_) => {
+            // Fallback to current directory logic for development
+            let current_dir = std::env::current_dir()
+                .map_err(|e| format!("Failed to get current directory: {}", e))?;
+            
+            let fallback_path = if current_dir.file_name().and_then(|n| n.to_str()) == Some("src-tauri") {
+                current_dir.parent().unwrap().join("user_scripts")
+            } else {
+                current_dir.join("user_scripts")
+            };
+            
+            println!("🟣 WIN_SCRIPT2_PATH not found, using fallback: {:?}", fallback_path);
+            fallback_path
+        }
     };
+    
+    // ScriptManager expects project root, so get parent of user_scripts
+    let project_root = user_scripts_path.parent()
+        .ok_or_else(|| "Failed to get parent directory of user_scripts".to_string())?
+        .to_path_buf();
     
     // Load scripts to find the requested one
     let mut script_manager = ScriptManager::new(project_root);
