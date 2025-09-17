@@ -1,26 +1,77 @@
 # WinScript2 - Rhai Scripting Platform
 
-A modern desktop application built with Tauri and SolidJS that provides a professional scripting environment using the Rhai scripting language.
+**Automate your Windows tasks with ease.** WinScript2 is a user-friendly desktop application that lets you write and run scripts to automate repetitive tasks, manage system operations, and enhance your productivity.
 
-## Features
+## What Can You Do?
 
-### 🚀 **Core Functionality**
-- **Rhai Script Execution**: Run Rhai scripts with full language support
-- **Interactive UI**: Dynamic user interface components for script interaction
+### 🎯 **Everyday Automation**
+- **System Information**: Get detailed hardware and software reports
+- **File Operations**: Batch rename, organize, and process files
+- **System Tasks**: Automate routine maintenance and monitoring
+- **Custom Workflows**: Create personalized automation scripts
+
+### ✨ **Why Choose WinScript2?**
+- **Easy to Use**: Clean, intuitive interface - no command line required
+- **Keyboard Friendly**: Navigate everything with arrow keys and shortcuts
+- **Instant Results**: See your scripts run in real-time with visual feedback
+- **Safe & Reliable**: Sandboxed script execution protects your system
+- **Extensible**: Start simple, grow to complex automation as you learn
+
+### 🚀 **Get Started in Minutes**
+1. **Download & Install** - No complex setup required
+2. **Browse Scripts** - Explore built-in examples and templates  
+3. **Run & Customize** - Execute scripts with a single keypress
+4. **Create Your Own** - Build custom automation for your needs
+
+## User Guide
+
+### 📋 **Basic Usage**
+- **Launch the App** - Double-click to open WinScript2
+- **Browse Scripts** - Use ↑/↓ arrow keys to navigate available scripts
+- **Search Scripts** - Type to filter and find what you need
+- **Run Scripts** - Press Enter to execute any script
+- **Quick Exit** - Press Q anytime to return to the script list
+
+### ⌨️ **Keyboard Shortcuts**
+| Key | What It Does |
+|-----|-------------|
+| `↑/↓` | Browse through available scripts |
+| `Type` | Search scripts by name |
+| `Enter` | Run the selected script |
+| `Q` | Stop script and return to main menu |
+| `Escape` | Clear search |
+
+### 🎛️ **Script Organization**
+Scripts are automatically organized into categories:
+- **Built-in Scripts**: Ready-to-use examples and utilities
+- **System Scripts**: Hardware and software information tools
+- **Custom Scripts**: Your personal automation scripts
+
+---
+
+## Technical Documentation
+
+### 🔧 **For Developers & Advanced Users**
+
+WinScript2 is built with modern technologies for performance, security, and extensibility.
+
+### **Technology Stack**
+
+#### Frontend
+- **SolidJS**: Reactive JavaScript framework for responsive UI
+- **TypeScript**: Type-safe development with enhanced IDE support
+- **CSS**: Professional VS Code-inspired dark theme styling
+
+#### Backend  
+- **Tauri v2**: Modern desktop app framework with Rust security
+- **Rust**: System-level performance and memory safety
+- **Rhai v1.17**: Embedded scripting engine with sandboxed execution
+
+#### Key Features
+- **Script Management**: Custom Rust-based script discovery and categorization
+- **UI Kit Integration**: Enhanced Rhai scripting capabilities with UI components
+- **Event System**: Global keyboard and UI event handling with persistent focus
 - **Environment Variables**: Configurable script paths via `WIN_SCRIPT2_PATH`
-- **Script Discovery**: Automatic detection and categorization of scripts
-
-### ⚡ **Enhanced User Experience**
-- **Keyboard Navigation**: Full keyboard control with arrow keys
-- **Persistent Focus Management**: Inputs stay focused for seamless navigation
-- **Auto-complete Disabled**: Clean input fields without browser suggestions
-- **Instant Script Termination**: Press `Q` to immediately return to script selection
-
-### 🎨 **Professional Interface**
-- **VS Code Dark Theme**: Consistent professional styling
-- **Script Search**: Type-to-filter script discovery
-- **Real-time Feedback**: Loading states and execution status
-- **Responsive Design**: Clean, modern UI components
 
 ## Quick Start
 
