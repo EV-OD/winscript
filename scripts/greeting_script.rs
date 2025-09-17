@@ -1,52 +1,16 @@
 use crate::kits::Kit;
 use tauri::AppHandle;
-use std::sync::{Arc, Mutex};
-use std::sync::OnceLock;
-
-// Global flag to prevent multiple script instances
-static SCRIPT_RUNNING: OnceLock<Arc<Mutex<bool>>> = OnceLock::new();
-
-fn get_script_lock() -> &'static Arc<Mutex<bool>> {
-    SCRIPT_RUNNING.get_or_init(|| Arc::new(Mutex::new(false)))
-}
 
 /// Simple greeting script that takes user input and shows personalized output
 #[tauri::command]
 pub async fn greeting_script(app_handle: AppHandle) -> Result<String, String> {
     println!("🟣 greeting_script: Function called");
     
-    // Check if script is already running
-    {
-        let lock = get_script_lock();
-        let mut running = lock.lock().map_err(|e| e.to_string())?;
-        if *running {
-            println!("🟣 greeting_script: Script already running, returning early");
-            return Err("Script is already running".to_string());
-        }
-        *running = true;
-        println!("🟣 greeting_script: Set running flag to true");
-    }
-    
-    let result = run_greeting_script_impl(app_handle).await;
-    
-    // Clear the running flag
-    {
-        let lock = get_script_lock();
-        if let Ok(mut running) = lock.lock() {
-            *running = false;
-            println!("🟣 greeting_script: Script finished, cleared running flag");
-        }
-    }
-    
-    result
-}
-
-async fn run_greeting_script_impl(app_handle: AppHandle) -> Result<String, String> {
-    let kit = Kit::new(app_handle);
+    let mut kit = Kit::new(app_handle);
 
     // Welcome message
     println!("🟣 greeting_script: Showing welcome message");
-    kit.show_message("Welcome", "Welcome to the Greeting Script!").await?;
+    kit.show_message("Welcome", "Welcome to the Greeting Script!")?;
 
     // Get user's name
     println!("🟣 greeting_script: Asking for name");
