@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use tauri::{Manager, Emitter};
 use tokio::sync::oneshot;
 use uuid::Uuid;
@@ -22,14 +22,20 @@ pub struct UIResponse {
 
 type PendingRequests = Arc<Mutex<HashMap<String, oneshot::Sender<String>>>>;
 
+// Global singleton for pending requests
+static PENDING_REQUESTS: OnceLock<PendingRequests> = OnceLock::new();
+
+fn get_pending_requests() -> &'static PendingRequests {
+    PENDING_REQUESTS.get_or_init(|| Arc::new(Mutex::new(HashMap::new())))
+}
+
 #[tauri::command]
 pub async fn ui_response(
     id: String,
     value: String,
-    state: tauri::State<'_, PendingRequests>,
 ) -> Result<(), String> {
     println!("🟣 ui_response: Called with id: {}, value: {}", id, value);
-    let mut pending = state.lock().map_err(|e| e.to_string())?;
+    let mut pending = get_pending_requests().lock().map_err(|e| e.to_string())?;
     if let Some(sender) = pending.remove(&id) {
         println!("🟣 ui_response: Found sender for ID, sending response");
         let _ = sender.send(value);
@@ -41,19 +47,12 @@ pub async fn ui_response(
 
 pub struct UIController {
     app_handle: tauri::AppHandle,
-    pending_requests: PendingRequests,
 }
 
 impl UIController {
-    pub fn new(app_handle: tauri::AppHandle) -> Self {
-        let pending_requests = Arc::new(Mutex::new(HashMap::new()));
-        
-        // Store pending_requests in app state
-        app_handle.manage(pending_requests.clone());
-        
+    pub fn new(app_handle: tauri::AppHandle) -> Self {        
         Self {
             app_handle,
-            pending_requests,
         }
     }
 
@@ -65,7 +64,7 @@ impl UIController {
 
         // Store the sender for this request
         {
-            let mut pending = self.pending_requests.lock().map_err(|e| e.to_string())?;
+            let mut pending = get_pending_requests().lock().map_err(|e| e.to_string())?;
             pending.insert(id.clone(), sender);
         }
 
@@ -103,7 +102,7 @@ impl UIController {
 
         // Store the sender for this request
         {
-            let mut pending = self.pending_requests.lock().map_err(|e| e.to_string())?;
+            let mut pending = get_pending_requests().lock().map_err(|e| e.to_string())?;
             pending.insert(id.clone(), sender);
         }
 

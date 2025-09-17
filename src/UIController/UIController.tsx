@@ -22,6 +22,7 @@ export const UIController: Component<UIControllerProps> = (props) => {
   const [selectedValue, setSelectedValue] = createSignal('');
   const [activeIndex, setActiveIndex] = createSignal(0);
   let selectInputRef: HTMLInputElement | undefined;
+  let inputRef: HTMLInputElement | undefined;
 
   // Filter options based on input value
   const filteredOptions = createMemo(() => {
@@ -42,11 +43,28 @@ export const UIController: Component<UIControllerProps> = (props) => {
     }
   });
 
-  // Auto-focus select input when it becomes visible
+  // Reset values when a new request comes in
   createEffect(() => {
-    if (props.request?.type === 'select' && selectInputRef) {
+    const request = props.request;
+    if (request?.id) {
+      setInputValue('');
+      setSelectedValue('');
+      setActiveIndex(0);
+      console.log('🔵 UIController: Reset values for new request:', request.id);
+    }
+  });
+
+  // Auto-focus inputs when they become visible (track request ID to ensure it runs for new requests)
+  createEffect(() => {
+    const request = props.request;
+    // Track both the request ID and type to ensure effect runs for each new request
+    if (request?.id && request?.type === 'select' && selectInputRef) {
       setTimeout(() => {
         selectInputRef?.focus();
+      }, 50);
+    } else if (request?.id && request?.type === 'input' && inputRef) {
+      setTimeout(() => {
+        inputRef?.focus();
       }, 50);
     }
   });
@@ -61,23 +79,28 @@ export const UIController: Component<UIControllerProps> = (props) => {
 
     let response = '';
     if (request.type === 'input') {
-      response = inputValue();
+      response = inputValue().trim();
       console.log('🔵 UIController: Input response:', response);
+      // Don't send empty responses for input
+      if (!response) {
+        console.log('🟡 UIController: Empty input response, ignoring');
+        return;
+      }
     } else if (request.type === 'select') {
       const filtered = filteredOptions();
       response = filtered[activeIndex()] || '';
       console.log('🔵 UIController: Select response:', response);
+      // Don't send empty responses for select
+      if (!response) {
+        console.log('🟡 UIController: Empty select response, ignoring');
+        return;
+      }
     }
 
     try {
       console.log('🔵 UIController: Sending response via UIService');
       await UIService.sendResponse(request.id, response);
       console.log('🔵 UIController: Response sent successfully');
-      
-      // Reset values for next input
-      setInputValue('');
-      setSelectedValue('');
-      setActiveIndex(0);
       
       // Don't call onComplete here - let the script continue its flow
       // onComplete should only be called when the entire script is finished
@@ -122,15 +145,15 @@ export const UIController: Component<UIControllerProps> = (props) => {
           {/* Input Interface */}
           <div style="padding: 20px; border-bottom: 1px solid #3c3c3c; flex-shrink: 0;">
             <input
+              ref={inputRef}
               type="text"
               placeholder={props.request?.message || "Enter your response..."}
               value={inputValue()}
               onInput={(e) => setInputValue(e.currentTarget.value)}
               onKeyDown={handleKeyDown}
               style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
-              autofocus
             />
-          </div>
+                      </div>
         </Show>
 
         <Show when={props.request?.type === 'select'}>
