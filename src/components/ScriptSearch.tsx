@@ -66,12 +66,46 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
     setTimeout(() => maintainFocus(), 10);
   };
 
-  // Global keyboard handler for arrow keys
+  // Global keyboard handler for arrow keys with proper event prevention
   const handleGlobalKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      // Ensure the search input has focus and handle the key
+    const filtered = filteredScripts();
+    
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      setSelectedIndex(prev => Math.max(0, Math.min(prev + 1, filtered.length - 1)));
       maintainFocus();
-      handleKeyDown(event);
+      return;
+    }
+    
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      setSelectedIndex(prev => Math.max(0, prev - 1));
+      maintainFocus();
+      return;
+    }
+    
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      if (filtered.length > 0) {
+        handleScriptSelect(filtered[selectedIndex()]);
+      }
+      return;
+    }
+    
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      setSearchQuery('');
+      setSelectedIndex(0);
+      maintainFocus();
+      return;
     }
   };
 
@@ -80,43 +114,15 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
     document.addEventListener('click', handleGlobalEvent, true);
     document.addEventListener('focus', handleGlobalEvent, true);
     document.addEventListener('blur', maintainFocus, true);
-    document.addEventListener('keydown', handleGlobalKeyDown, true);
+    document.addEventListener('keydown', handleGlobalKeyDown, { capture: true });
   });
 
   onCleanup(() => {
     document.removeEventListener('click', handleGlobalEvent, true);
     document.removeEventListener('focus', handleGlobalEvent, true);
     document.removeEventListener('blur', maintainFocus, true);
-    document.removeEventListener('keydown', handleGlobalKeyDown, true);
+    document.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
   });
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    const filtered = filteredScripts();
-    
-    switch (event.key) {
-      case 'ArrowDown':
-        event.preventDefault();
-        setSelectedIndex(prev => Math.max(0, Math.min(prev + 1, filtered.length - 1)));
-        maintainFocus(); // Keep focus on input
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        setSelectedIndex(prev => Math.max(0, prev - 1));
-        maintainFocus(); // Keep focus on input
-        break;
-      case 'Enter':
-        event.preventDefault();
-        if (filtered.length > 0) {
-          handleScriptSelect(filtered[selectedIndex()]);
-        }
-        break;
-      case 'Escape':
-        setSearchQuery('');
-        setSelectedIndex(0);
-        maintainFocus(); // Keep focus on input
-        break;
-    }
-  };
 
   const handleScriptSelect = async (script: ScriptInfo) => {
     setIsLoading(true);
@@ -160,7 +166,6 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
             placeholder="Search Rhai scripts..."
             value={searchQuery()}
             onInput={(e) => handleSearchChange(e.currentTarget.value)}
-            onKeyDown={handleKeyDown}
             onBlur={handleInputBlur}
             autofocus
             autocomplete="off"
