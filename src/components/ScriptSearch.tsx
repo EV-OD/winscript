@@ -123,7 +123,7 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
     try {
       console.log('📜 ScriptSearch: Executing Rhai script:', script.name);
       
-      const result = await invoke('run_rhai_script', { scriptName: script.name });
+      const result = await invoke('run_rhai_script', { scriptId: script.id });
       console.log('📜 ScriptSearch: Script executed successfully:', result);
       
       // Notify parent to switch to UIController
@@ -163,6 +163,13 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
             onKeyDown={handleKeyDown}
             onBlur={handleInputBlur}
             autofocus
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck={false}
+            data-gramm="false"
+            data-gramm_editor="false"
+            data-enable-grammarly="false"
             style="
               width: 100%; 
               height: 40px; 

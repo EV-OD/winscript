@@ -247,6 +247,13 @@ export const UIController: Component<UIControllerProps> = (props) => {
                 console.log('🔵 Input focused');
               }}
               autofocus={true}
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck={false}
+              data-gramm="false"
+              data-gramm_editor="false"
+              data-enable-grammarly="false"
               style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
             />
           </div>
@@ -273,6 +280,13 @@ export const UIController: Component<UIControllerProps> = (props) => {
                 console.log('🔵 Select input focused');
               }}
               autofocus={true}
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck={false}
+              data-gramm="false"
+              data-gramm_editor="false"
+              data-enable-grammarly="false"
               style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
             />
           </div>

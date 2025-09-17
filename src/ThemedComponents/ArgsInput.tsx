@@ -23,6 +23,13 @@ export const ArgsInput: Component<ArgsInputProps> = (props) => {
       onInput={(e) => props.onChange(e.currentTarget.value)}
       onKeyPress={handleKeyPress}
       placeholder={props.placeholder || 'Enter argument...'}
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck={false}
+      data-gramm="false"
+      data-gramm_editor="false"
+      data-enable-grammarly="false"
     />
   );
 };

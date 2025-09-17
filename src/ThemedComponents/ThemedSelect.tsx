@@ -37,6 +37,13 @@ export const ThemedSelect: Component<ThemedSelectProps> = (props) => {
         onInput={(e) => setFilter(e.currentTarget.value)}
         onKeyPress={handleKeyPress}
         placeholder={props.placeholder || 'Filter...'}
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck={false}
+        data-gramm="false"
+        data-gramm_editor="false"
+        data-enable-grammarly="false"
       />
       <ul class="themed-select-list">
         {filtered().map((opt: string) => (

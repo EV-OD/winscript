@@ -16,6 +16,13 @@ export const ArgsInput: Component<ArgsInputProps> = (props) => (
     value={props.value}
     onInput={(e) => props.onChange(e.currentTarget.value)}
     placeholder={props.placeholder || 'Enter argument...'}
+    autocomplete="off"
+    autocapitalize="off"
+    autocorrect="off"
+    spellcheck={false}
+    data-gramm="false"
+    data-gramm_editor="false"
+    data-enable-grammarly="false"
   />
 );
 
@@ -40,6 +47,13 @@ export const ThemedSelect: Component<ThemedSelectProps> = (props) => {
         value={filter()}
         onInput={(e) => setFilter(e.currentTarget.value)}
         placeholder={props.placeholder || 'Filter...'}
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck={false}
+        data-gramm="false"
+        data-gramm_editor="false"
+        data-enable-grammarly="false"
       />
       <ul class="themed-select-list">
         {filtered().map((opt: string) => (

@@ -1,4 +1,4 @@
-import { Component, createSignal, Show } from "solid-js";
+import { Component, createSignal, Show, createEffect } from "solid-js";
 import "./App.css";
 import { UIController } from "./UIController";
 import { ScriptSearch } from "./components";
@@ -22,6 +22,14 @@ const App: Component = () => {
   // State to control what to show
   const [showUIController, setShowUIController] = createSignal(false);
 
+  // Automatically show UIController when a request is received
+  createEffect(() => {
+    if (currentRequest() && !showUIController()) {
+      console.log('🔵 App: UI Request detected, automatically showing UIController');
+      setShowUIController(true);
+    }
+  });
+
   const handleScriptSelect = (script: string) => {
     console.log('🔵 App: Selected script:', script);
     console.log('🔵 App: Setting showUIController to true');
@@ -37,7 +45,7 @@ const App: Component = () => {
 
   return (
     <main class="container">
-      <Show when={!showUIController() && !currentRequest()}>
+      <Show when={!showUIController()}>
         <ScriptSearch onScriptSelect={handleScriptSelect} />
       </Show>
 
@@ -51,15 +59,6 @@ const App: Component = () => {
             clearRequest();
           }}
         />
-      </Show>
-
-      <Show when={currentRequest() && !showUIController()}>
-        <div style="padding: 2rem; text-align: center;">
-          <h2>UI Request received but UIController not shown</h2>
-          <p>showUIController: {showUIController() ? 'true' : 'false'}</p>
-          <p>currentRequest: {currentRequest() ? 'present' : 'null'}</p>
-          <button onClick={() => setShowUIController(true)}>Show UIController</button>
-        </div>
       </Show>
     </main>
   );
