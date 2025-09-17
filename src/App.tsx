@@ -30,6 +30,18 @@ const App: Component = () => {
     }
   });
 
+  // Enhanced script termination function
+  const forceCloseUIController = () => {
+    console.log('🔵 App: Force closing UIController and terminating script');
+    setShowUIController(false);
+    clearRequest();
+    
+    // Clear any pending UI requests or script state
+    if (window.onScriptComplete) {
+      window.onScriptComplete();
+    }
+  };
+
   const handleScriptSelect = (script: string) => {
     console.log('🔵 App: Selected script:', script);
     console.log('🔵 App: Setting showUIController to true');
@@ -42,6 +54,24 @@ const App: Component = () => {
     setShowUIController(false);
     clearRequest();
   };
+
+  // Global keyboard handler for immediate quit
+  createEffect(() => {
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'q' && showUIController()) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.log('🔵 App: Q pressed - immediately returning to ScriptSearch');
+        forceCloseUIController();
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown, { capture: true });
+    
+    return () => {
+      document.removeEventListener('keydown', handleGlobalKeyDown, { capture: true });
+    };
+  });
 
   return (
     <main class="container">
