@@ -1,4 +1,4 @@
-import { createSignal, Component, Show, For, createMemo, createEffect } from 'solid-js';
+import { createSignal, Component, Show, For, createMemo, createEffect, onMount, onCleanup } from 'solid-js';
 import { UIService } from '../services/UIService';
 import { HtmlRenderer } from '../ThemedComponents';
 
@@ -24,12 +24,13 @@ export const UIController: Component<UIControllerProps> = (props) => {
   let selectInputRef: HTMLInputElement | undefined;
   let inputRef: HTMLInputElement | undefined;
 
-  // Filter options based on input value
+  // Filter options based on input value - ONLY BY NAME
   const filteredOptions = createMemo(() => {
     const options = props.request?.options || [];
     const filter = inputValue().toLowerCase();
     if (!filter) return options;
     
+    // Filter only by option name, not description
     return options.filter(option => 
       option.toLowerCase().includes(filter)
     );
@@ -41,6 +42,55 @@ export const UIController: Component<UIControllerProps> = (props) => {
     if (filtered.length > 0 && activeIndex() >= filtered.length) {
       setActiveIndex(0);
     }
+  });
+
+  // Force focus management - keep focus on input elements always
+  const maintainFocus = () => {
+    const request = props.request;
+    if (!request) return;
+
+    if (request.type === 'input' && inputRef) {
+      inputRef.focus();
+    } else if (request.type === 'select' && selectInputRef) {
+      selectInputRef.focus();
+    }
+  };
+
+  // Set up focus maintenance on mount and request changes
+  createEffect(() => {
+    const request = props.request;
+    if (request?.type === 'input' || request?.type === 'select') {
+      // Focus immediately
+      setTimeout(() => maintainFocus(), 10);
+      
+      // Set up interval to maintain focus
+      const focusInterval = setInterval(maintainFocus, 100);
+      
+      // Clean up on next effect run
+      return () => clearInterval(focusInterval);
+    }
+  });
+
+  // Global click handler to maintain focus
+  const handleGlobalClick = (event: MouseEvent) => {
+    const request = props.request;
+    if (request?.type === 'input' || request?.type === 'select') {
+      // Always refocus after any click
+      setTimeout(() => maintainFocus(), 10);
+    }
+  };
+
+  // Set up global click listener
+  onMount(() => {
+    document.addEventListener('click', handleGlobalClick, true);
+    document.addEventListener('focus', handleGlobalClick, true);
+    document.addEventListener('blur', maintainFocus, true);
+  });
+
+  onCleanup(() => {
+    document.removeEventListener('click', handleGlobalClick, true);
+    document.removeEventListener('focus', handleGlobalClick, true);
+    document.removeEventListener('blur', maintainFocus, true);
   });
 
   // Reset values when a new request comes in
@@ -122,21 +172,59 @@ export const UIController: Component<UIControllerProps> = (props) => {
       
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setActiveIndex((prev) => (prev + 1) % filtered.length);
+        event.stopPropagation();
+        setActiveIndex((prev) => {
+          const newIndex = (prev + 1) % filtered.length;
+          return newIndex;
+        });
+        // Maintain focus after arrow key
+        setTimeout(() => maintainFocus(), 10);
       } else if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setActiveIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+        event.stopPropagation();
+        setActiveIndex((prev) => {
+          const newIndex = (prev - 1 + filtered.length) % filtered.length;
+          return newIndex;
+        });
+        // Maintain focus after arrow key
+        setTimeout(() => maintainFocus(), 10);
       } else if (event.key === 'Enter') {
         event.preventDefault();
+        event.stopPropagation();
         if (filtered.length > 0) {
           handleSubmit();
         }
       }
     } else if (event.key === 'Enter') {
       event.preventDefault();
+      event.stopPropagation();
       handleSubmit();
     }
+    
+    // Always maintain focus after any key event
+    setTimeout(() => maintainFocus(), 10);
   };
+
+  // Enhanced global keyboard handler for arrow keys
+  const handleGlobalKeyDown = (event: KeyboardEvent) => {
+    const request = props.request;
+    if (request?.type === 'select') {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        // Ensure the select input has focus and handle the key
+        maintainFocus();
+        handleKeyDown(event);
+      }
+    }
+  };
+
+  // Set up global keyboard listener
+  onMount(() => {
+    document.addEventListener('keydown', handleGlobalKeyDown, true);
+  });
+
+  onCleanup(() => {
+    document.removeEventListener('keydown', handleGlobalKeyDown, true);
+  });
 
   return (
     <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column; overflow: hidden;">
@@ -151,9 +239,17 @@ export const UIController: Component<UIControllerProps> = (props) => {
               value={inputValue()}
               onInput={(e) => setInputValue(e.currentTarget.value)}
               onKeyDown={handleKeyDown}
+              onBlur={(e) => {
+                // Prevent loss of focus by refocusing
+                setTimeout(() => maintainFocus(), 10);
+              }}
+              onFocus={() => {
+                console.log('🔵 Input focused');
+              }}
+              autofocus={true}
               style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
             />
-                      </div>
+          </div>
         </Show>
 
         <Show when={props.request?.type === 'select'}>
@@ -162,13 +258,21 @@ export const UIController: Component<UIControllerProps> = (props) => {
             <input
               ref={selectInputRef}
               type="text"
-              placeholder={props.request?.message || "Select category or note"}
+              placeholder={props.request?.message || "Type to filter options..."}
               value={inputValue()}
               onInput={(e) => {
                 setInputValue(e.currentTarget.value);
                 setActiveIndex(0); // Reset to first item when filtering
               }}
               onKeyDown={handleKeyDown}
+              onBlur={(e) => {
+                // Prevent loss of focus by refocusing
+                setTimeout(() => maintainFocus(), 10);
+              }}
+              onFocus={() => {
+                console.log('🔵 Select input focused');
+              }}
+              autofocus={true}
               style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
             />
           </div>
@@ -191,8 +295,13 @@ export const UIController: Component<UIControllerProps> = (props) => {
                   onClick={() => {
                     setActiveIndex(index());
                     handleSubmit();
+                    // Don't refocus here as the input will disappear after submit
                   }}
                   onMouseEnter={() => setActiveIndex(index())}
+                  onMouseDown={(e) => {
+                    // Prevent blur from happening on mouse down
+                    e.preventDefault();
+                  }}
                 >
                   <span style="margin-right: 12px; color: #ffd700; flex-shrink: 0;">📁</span>
                   <div style="font-size: 14px; color: #cccccc; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
