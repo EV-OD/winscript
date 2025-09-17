@@ -111,6 +111,121 @@ impl Kit {
             }
         }
     }
+
+    // =============================================================================
+    // SYNC WRAPPERS FOR RHAI INTEGRATION
+    // =============================================================================
+
+    /// Sync wrapper for ask_input - for use in Rhai scripts
+    pub fn ask_input_sync(&mut self, message: &str) -> String {
+        // Handle async in sync context using block_in_place
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match self.ask_input(message).await {
+                    Ok(result) => result,
+                    Err(e) => {
+                        eprintln!("Error in ask_input_sync: {}", e);
+                        String::new() // Return empty string on error
+                    }
+                }
+            })
+        })
+    }
+
+    /// Sync wrapper for ask_select - for use in Rhai scripts  
+    pub fn ask_select_sync(&mut self, message: &str, options: Vec<String>) -> String {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                let str_options: Vec<&str> = options.iter().map(|s| s.as_str()).collect();
+                match self.ask_select(message, str_options).await {
+                    Ok(result) => result,
+                    Err(e) => {
+                        eprintln!("Error in ask_select_sync: {}", e);
+                        String::new() // Return empty string on error
+                    }
+                }
+            })
+        })
+    }
+
+    /// Sync wrapper for ask_number - for use in Rhai scripts
+    pub fn ask_number_sync(&mut self, message: &str) -> f64 {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match self.ask_number(message).await {
+                    Ok(result) => result,
+                    Err(e) => {
+                        eprintln!("Error in ask_number_sync: {}", e);
+                        0.0 // Return 0.0 on error
+                    }
+                }
+            })
+        })
+    }
+
+    /// Sync wrapper for render_html - for use in Rhai scripts (already sync!)
+    pub fn render_html_sync(&mut self, html_content: &str) -> bool {
+        // Reset the awaiting flag before rendering HTML so UI stays visible after completion
+        println!("🟣 Kit: render_html_sync called - resetting awaiting components flag");
+        self.has_awaiting_components = false;
+        
+        match self.render_html("Rhai Script Output", html_content) {
+            Ok(_) => {
+                println!("🟣 Kit: HTML rendered successfully, UI will stay visible");
+                true
+            },
+            Err(e) => {
+                eprintln!("Error in render_html_sync: {}", e);
+                false
+            }
+        }
+    }
+
+    /// Sync wrapper for show_message - for use in Rhai scripts (already sync!)
+    pub fn show_message_sync(&self, title: &str, message: &str) -> bool {
+        match self.show_message(title, message) {
+            Ok(_) => true,
+            Err(e) => {
+                eprintln!("Error in show_message_sync: {}", e);
+                false
+            }
+        }
+    }
+
+    /// Sync wrapper for confirm - for use in Rhai scripts
+    pub fn confirm_sync(&self, message: &str) -> bool {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match self.confirm(message).await {
+                    Ok(result) => result,
+                    Err(e) => {
+                        eprintln!("Error in confirm_sync: {}", e);
+                        false // Return false on error
+                    }
+                }
+            })
+        })
+    }
+
+    /// Sync wrapper for script completion - for use in Rhai scripts
+    pub fn complete_sync(&self) -> () {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match self.script_complete().await {
+                    Ok(_) => (),
+                    Err(e) => {
+                        eprintln!("Error in complete_sync: {}", e);
+                        ()
+                    }
+                }
+            })
+        })
+    }
+
+    /// Reset awaiting flag (already sync!)
+    pub fn reset_awaiting_sync(&mut self) {
+        self.reset_awaiting_flag();
+    }
 }
 
 /// Convenience function to create a new Kit instance

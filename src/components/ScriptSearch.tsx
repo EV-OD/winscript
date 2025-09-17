@@ -1,44 +1,39 @@
 import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
+import { UIService, ScriptInfo } from '../services/UIService';
 
 type ScriptSearchProps = {
   onScriptSelect: (script: string) => void;
-};
-
-type ScriptItem = {
-  id: string;
-  name: string;
-  description: string;
-  category?: string;
 };
 
 export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
   const [searchQuery, setSearchQuery] = createSignal('');
   const [selectedIndex, setSelectedIndex] = createSignal(0);
   const [isLoading, setIsLoading] = createSignal(false);
+  const [rhaiScripts, setRhaiScripts] = createSignal<ScriptInfo[]>([]);
+  const [scriptsLoaded, setScriptsLoaded] = createSignal(false);
 
-  // Available scripts
-  const scripts: ScriptItem[] = [
-    {
-      id: 'greeting_script',
-      name: 'greeting',
-      description: 'Interactive greeting script with personalized output',
-      category: 'Interactive'
-    },
-    {
-      id: 'html_demo_script', 
-      name: 'html-demo',
-      description: 'HTML demonstration with persistent display',
-      category: 'Demo'
+  // Load Rhai scripts on mount
+  onMount(async () => {
+    try {
+      setIsLoading(true);
+      const scripts = await UIService.listRhaiScripts();
+      setRhaiScripts(scripts);
+      setScriptsLoaded(true);
+      console.log('📜 ScriptSearch: Loaded Rhai scripts:', scripts);
+    } catch (error) {
+      console.error('📜 ScriptSearch: Failed to load Rhai scripts:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  });
 
   // Filter scripts based on search query
   const filteredScripts = () => {
     const query = searchQuery().toLowerCase();
-    if (!query) return scripts;
+    if (!query) return rhaiScripts();
     
-    return scripts.filter(script => 
+    return rhaiScripts().filter(script => 
       script.name.toLowerCase().includes(query) ||
       script.description.toLowerCase().includes(query) ||
       (script.category && script.category.toLowerCase().includes(query))
@@ -70,19 +65,21 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
     }
   };
 
-  const handleScriptSelect = async (script: ScriptItem) => {
+  const handleScriptSelect = async (script: ScriptInfo) => {
     setIsLoading(true);
     try {
-      console.log('🔵 ScriptSearch: Executing script:', script.id);
+      console.log('🔵 ScriptSearch: Executing Rhai script:', script.id);
       
       // Notify parent component FIRST to show UIController
       props.onScriptSelect(script.id);
       
-      // Then call the Rust command
-      await invoke(script.id);
+      // Execute the Rhai script
+      const result = await UIService.runRhaiScript(script.id);
+      console.log('🔵 ScriptSearch: Rhai script completed:', result);
       
     } catch (error) {
-      console.error('🔴 ScriptSearch: Failed to execute script:', error);
+      console.error('🔴 ScriptSearch: Failed to execute Rhai script:', error);
+      alert(`Script execution failed: ${error}`);
       setIsLoading(false);
     }
   };
@@ -128,14 +125,19 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
       <div style="flex: 1; overflow-y: auto;">
         <Show when={filteredScripts().length > 0} fallback={
           <div style="padding: 40px 20px; text-align: center; color: #858585;">
-            <div>No scripts found</div>
-            <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Try a different search term</div>
+            <Show when={!scriptsLoaded()}>
+              <div>Loading Rhai scripts...</div>
+            </Show>
+            <Show when={scriptsLoaded() && filteredScripts().length === 0}>
+              <div>No scripts found</div>
+              <div style="font-size: 12px; margin-top: 8px; opacity: 0.7;">Try a different search term</div>
+            </Show>
           </div>
         }>
           {/* Results Header */}
           <div style="padding: 12px 20px 8px; border-bottom: 1px solid #3c3c3c; background: #252526;">
             <span style="font-size: 12px; color: #858585; text-transform: uppercase; font-weight: 600;">
-              EXACT MATCH
+              RHAI SCRIPTS ({filteredScripts().length})
             </span>
           </div>
           

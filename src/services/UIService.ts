@@ -73,4 +73,44 @@ export class UIService {
       throw error;
     }
   }
+
+  /**
+   * List all available Rhai scripts
+   */
+  static async listRhaiScripts(): Promise<ScriptInfo[]> {
+    console.log('🟡 UIService: listRhaiScripts() called');
+    try {
+      const result = await invoke('list_rhai_scripts');
+      console.log('🟡 UIService: Rhai scripts loaded:', result);
+      return result as ScriptInfo[];
+    } catch (error) {
+      console.error('🔴 UIService: Failed to list Rhai scripts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute a Rhai script by its ID
+   */
+  static async runRhaiScript(scriptId: string): Promise<string> {
+    console.log('🟡 UIService: runRhaiScript() called with ID:', scriptId);
+    try {
+      const result = await invoke('run_rhai_script', { scriptId });
+      console.log('🟡 UIService: Rhai script execution result:', result);
+      return result as string;
+    } catch (error) {
+      console.error('🔴 UIService: Rhai script execution failed:', error);
+      throw error;
+    }
+  }
+}
+
+// TypeScript interface for ScriptInfo
+export interface ScriptInfo {
+  id: string;
+  name: string;
+  description: string;
+  file_path: string;
+  category: string;
+  script_type: 'Rhai';
 }
