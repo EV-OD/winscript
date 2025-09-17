@@ -1,4 +1,4 @@
-import { createSignal, Component, Show, For } from 'solid-js';
+import { createSignal, Component, Show, For, createMemo, createEffect } from 'solid-js';
 import { UIService } from '../services/UIService';
 import { HtmlRenderer } from '../ThemedComponents';
 
@@ -20,6 +20,36 @@ export const UIController: Component<UIControllerProps> = (props) => {
   console.log('🔵 UIController: props.request =', props.request);
   const [inputValue, setInputValue] = createSignal('');
   const [selectedValue, setSelectedValue] = createSignal('');
+  const [activeIndex, setActiveIndex] = createSignal(0);
+  let selectInputRef: HTMLInputElement | undefined;
+
+  // Filter options based on input value
+  const filteredOptions = createMemo(() => {
+    const options = props.request?.options || [];
+    const filter = inputValue().toLowerCase();
+    if (!filter) return options;
+    
+    return options.filter(option => 
+      option.toLowerCase().includes(filter)
+    );
+  });
+
+  // Reset active index when filtered options change
+  createMemo(() => {
+    const filtered = filteredOptions();
+    if (filtered.length > 0 && activeIndex() >= filtered.length) {
+      setActiveIndex(0);
+    }
+  });
+
+  // Auto-focus select input when it becomes visible
+  createEffect(() => {
+    if (props.request?.type === 'select' && selectInputRef) {
+      setTimeout(() => {
+        selectInputRef?.focus();
+      }, 50);
+    }
+  });
 
   const handleSubmit = async () => {
     console.log('🔵 UIController: handleSubmit called');
@@ -34,7 +64,8 @@ export const UIController: Component<UIControllerProps> = (props) => {
       response = inputValue();
       console.log('🔵 UIController: Input response:', response);
     } else if (request.type === 'select') {
-      response = selectedValue();
+      const filtered = filteredOptions();
+      response = filtered[activeIndex()] || '';
       console.log('🔵 UIController: Select response:', response);
     }
 
@@ -46,6 +77,7 @@ export const UIController: Component<UIControllerProps> = (props) => {
       // Reset values for next input
       setInputValue('');
       setSelectedValue('');
+      setActiveIndex(0);
       
       // Don't call onComplete here - let the script continue its flow
       // onComplete should only be called when the entire script is finished
@@ -62,25 +94,40 @@ export const UIController: Component<UIControllerProps> = (props) => {
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter') {
+    if (props.request?.type === 'select') {
+      const filtered = filteredOptions();
+      
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setActiveIndex((prev) => (prev + 1) % filtered.length);
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setActiveIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (filtered.length > 0) {
+          handleSubmit();
+        }
+      }
+    } else if (event.key === 'Enter') {
       event.preventDefault();
       handleSubmit();
     }
   };
 
   return (
-    <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column;">
+    <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column; overflow: hidden;">
       <Show when={props.request}>
         <Show when={props.request?.type === 'input'}>
           {/* Input Interface */}
-          <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c;">
+          <div style="padding: 20px; border-bottom: 1px solid #3c3c3c; flex-shrink: 0;">
             <input
               type="text"
               placeholder={props.request?.message || "Enter your response..."}
               value={inputValue()}
               onInput={(e) => setInputValue(e.currentTarget.value)}
               onKeyDown={handleKeyDown}
-              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
               autofocus
             />
           </div>
@@ -88,21 +135,24 @@ export const UIController: Component<UIControllerProps> = (props) => {
 
         <Show when={props.request?.type === 'select'}>
           {/* Select Interface */}
-          <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c;">
+          <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c; flex-shrink: 0;">
             <input
+              ref={selectInputRef}
               type="text"
               placeholder={props.request?.message || "Select category or note"}
-              value={selectedValue()}
-              onInput={(e) => setSelectedValue(e.currentTarget.value)}
+              value={inputValue()}
+              onInput={(e) => {
+                setInputValue(e.currentTarget.value);
+                setActiveIndex(0); // Reset to first item when filtering
+              }}
               onKeyDown={handleKeyDown}
-              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
-              autofocus
+              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
             />
           </div>
 
           {/* Options List */}
-          <div style="flex: 1; overflow-y: auto;">
-            <For each={props.request?.options || []}>
+          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+            <For each={filteredOptions()}>
               {(option, index) => (
                 <div
                   style={{
@@ -110,18 +160,19 @@ export const UIController: Component<UIControllerProps> = (props) => {
                     'border-bottom': '1px solid #2d2d2d',
                     'cursor': 'pointer',
                     'transition': 'background-color 0.1s ease',
-                    'background': selectedValue() === option ? '#094771' : 'transparent',
+                    'background': index() === activeIndex() ? '#094771' : 'transparent',
                     'display': 'flex',
-                    'align-items': 'center'
+                    'align-items': 'center',
+                    'flex-shrink': '0'
                   }}
                   onClick={() => {
-                    setSelectedValue(option);
+                    setActiveIndex(index());
                     handleSubmit();
                   }}
-                  onMouseEnter={() => setSelectedValue(option)}
+                  onMouseEnter={() => setActiveIndex(index())}
                 >
-                  <span style="margin-right: 12px; color: #ffd700;">📁</span>
-                  <div style="font-size: 14px; color: #cccccc; font-weight: 500;">
+                  <span style="margin-right: 12px; color: #ffd700; flex-shrink: 0;">📁</span>
+                  <div style="font-size: 14px; color: #cccccc; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     {option}
                   </div>
                 </div>
@@ -132,15 +183,17 @@ export const UIController: Component<UIControllerProps> = (props) => {
 
         <Show when={props.request?.type === 'html'}>
           {/* HTML Display */}
-          <div style="flex: 1; overflow-y: auto; padding: 20px;">
-            <HtmlRenderer html={props.request?.html_content || ''} />
+          <div style="flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; min-height: 0;">
+            <div style="max-width: 100%; word-wrap: break-word;">
+              <HtmlRenderer html={props.request?.html_content || ''} />
+            </div>
           </div>
         </Show>
       </Show>
 
       <Show when={!props.request}>
-        <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; align-items: center; justify-content: center; color: #858585;">
-          <div style="text-align: center;">
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #858585; overflow: hidden;">
+          <div style="text-align: center; padding: 20px;">
             <div style="font-size: 18px; margin-bottom: 12px;">Script Running...</div>
             <div style="font-size: 14px; opacity: 0.7;">Waiting for next input from the script...</div>
           </div>
