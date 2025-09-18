@@ -1,4 +1,5 @@
 import { createSignal, Component, Show, For, createMemo, createEffect, onMount, onCleanup } from 'solid-js';
+import { invoke } from '@tauri-apps/api/core';
 import { UIService } from '../services/UIService';
 import { HtmlRenderer } from '../ThemedComponents';
 
@@ -19,10 +20,21 @@ export const UIController: Component<UIControllerProps> = (props) => {
   console.log('🔵 UIController: Component rendered with props:', props);
   console.log('🔵 UIController: props.request =', props.request);
   const [inputValue, setInputValue] = createSignal('');
-  const [selectedValue, setSelectedValue] = createSignal('');
   const [activeIndex, setActiveIndex] = createSignal(0);
+  const [platform, setPlatform] = createSignal('unknown');
   let selectInputRef: HTMLInputElement | undefined;
   let inputRef: HTMLInputElement | undefined;
+
+  // Detect platform for styling
+  onMount(async () => {
+    try {
+      const platformName = await invoke('get_platform');
+      setPlatform(platformName as string);
+      console.log('🔵 UIController: Platform detected:', platformName);
+    } catch (error) {
+      console.error('Failed to detect platform:', error);
+    }
+  });
 
   // Filter options based on input value - ONLY BY NAME
   const filteredOptions = createMemo(() => {
@@ -71,25 +83,21 @@ export const UIController: Component<UIControllerProps> = (props) => {
     }
   });
 
-  // Global click handler to maintain focus
-  const handleGlobalClick = (event: MouseEvent) => {
-    const request = props.request;
-    if (request?.type === 'input' || request?.type === 'select') {
-      // Always refocus after any click
-      setTimeout(() => maintainFocus(), 10);
-    }
+  // Global event handler to maintain focus
+  const handleGlobalEvent = () => {
+    setTimeout(() => maintainFocus(), 10);
   };
 
-  // Set up global click listener
+  // Set up global event listeners
   onMount(() => {
-    document.addEventListener('click', handleGlobalClick, true);
-    document.addEventListener('focus', handleGlobalClick, true);
+    document.addEventListener('click', handleGlobalEvent, true);
+    document.addEventListener('focus', handleGlobalEvent, true);
     document.addEventListener('blur', maintainFocus, true);
   });
 
   onCleanup(() => {
-    document.removeEventListener('click', handleGlobalClick, true);
-    document.removeEventListener('focus', handleGlobalClick, true);
+    document.removeEventListener('click', handleGlobalEvent, true);
+    document.removeEventListener('focus', handleGlobalEvent, true);
     document.removeEventListener('blur', maintainFocus, true);
   });
 
@@ -98,7 +106,6 @@ export const UIController: Component<UIControllerProps> = (props) => {
     const request = props.request;
     if (request?.id) {
       setInputValue('');
-      setSelectedValue('');
       setActiveIndex(0);
       console.log('🔵 UIController: Reset values for new request:', request.id);
     }
@@ -217,6 +224,13 @@ export const UIController: Component<UIControllerProps> = (props) => {
     }
   };
 
+  // Get glass effect class based on platform
+  const getGlassClass = () => {
+    const base = 'glass-container';
+    const platformClass = `glass-${platform()}`;
+    return `${base} ${platformClass}`;
+  };
+
   // Set up global keyboard listener
   onMount(() => {
     document.addEventListener('keydown', handleGlobalKeyDown, true);
@@ -227,99 +241,143 @@ export const UIController: Component<UIControllerProps> = (props) => {
   });
 
   return (
-    <div style="width: 100vw; height: 100vh; background: #3c38643d; display: flex; flex-direction: column; overflow: hidden;">
+    <div class={getGlassClass()} style="width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
       <Show when={props.request}>
         <Show when={props.request?.type === 'input'}>
-          {/* Input Interface */}
-          <div style="padding: 20px; border-bottom: 1px solid #3c3c3c; flex-shrink: 0;">
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder={props.request?.message || "Enter your response..."}
-              value={inputValue()}
-              onInput={(e) => setInputValue(e.currentTarget.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={(e) => {
-                // Prevent loss of focus by refocusing
-                setTimeout(() => maintainFocus(), 10);
-              }}
-              onFocus={() => {
-                console.log('🔵 Input focused');
-              }}
-              autofocus={true}
-              autocomplete="off"
-              autocapitalize="off"
-              autocorrect="off"
-              spellcheck={false}
-              data-gramm="false"
-              data-gramm_editor="false"
-              data-enable-grammarly="false"
-              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
-            />
+          {/* Input Interface with enhanced glass effect */}
+          <div style="
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+          ">
+            <div style="position: relative; display: flex; align-items: center;">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder={props.request?.message || "Enter your response..."}
+                value={inputValue()}
+                onInput={(e) => setInputValue(e.currentTarget.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={() => {
+                  // Prevent loss of focus by refocusing
+                  setTimeout(() => maintainFocus(), 10);
+                }}
+                onFocus={() => {
+                  console.log('🔵 Input focused');
+                }}
+                autofocus={true}
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck={false}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+                style="
+                  width: 100%; 
+                  height: 50px; 
+                  background: #403c4a; 
+                  color: #cccccc; 
+                  padding: 10px 20px;
+                  font-size: 20px;
+                  border-radius: 0px!important;
+                  outline: none;
+                  border: none;
+                "
+              />
+            </div>
+            <div style="margin-top: 8px; margin-left: 22px; font-size: 12px; color: #858585;">
+              Enter your response and press Enter to submit
+            </div>
           </div>
         </Show>
 
         <Show when={props.request?.type === 'select'}>
-          {/* Select Interface */}
-          <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c; flex-shrink: 0;">
-            <input
-              ref={selectInputRef}
-              type="text"
-              placeholder={props.request?.message || "Type to filter options..."}
-              value={inputValue()}
-              onInput={(e) => {
-                setInputValue(e.currentTarget.value);
-                setActiveIndex(0); // Reset to first item when filtering
-              }}
-              onKeyDown={handleKeyDown}
-              onBlur={(e) => {
-                // Prevent loss of focus by refocusing
-                setTimeout(() => maintainFocus(), 10);
-              }}
-              onFocus={() => {
-                console.log('🔵 Select input focused');
-              }}
-              autofocus={true}
-              autocomplete="off"
-              autocapitalize="off"
-              autocorrect="off"
-              spellcheck={false}
-              data-gramm="false"
-              data-gramm_editor="false"
-              data-enable-grammarly="false"
-              style="width: 100%; padding: 12px 16px; font-size: 16px; background: #2d2d2d; border: 1px solid #3c3c3c; border-radius: 6px; color: #cccccc; outline: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; box-sizing: border-box;"
-            />
+          {/* Select Interface with enhanced glass effect */}
+          <div style="
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+          ">
+            <div style="position: relative; display: flex; align-items: center;">
+              <input
+                ref={selectInputRef}
+                type="text"
+                placeholder={props.request?.message || "Type to filter options..."}
+                value={inputValue()}
+                onInput={(e) => {
+                  setInputValue(e.currentTarget.value);
+                  setActiveIndex(0); // Reset to first item when filtering
+                }}
+                onKeyDown={handleKeyDown}
+                onBlur={() => {
+                  // Prevent loss of focus by refocusing
+                  setTimeout(() => maintainFocus(), 10);
+                }}
+                onFocus={() => {
+                  console.log('🔵 Select input focused');
+                }}
+                autofocus={true}
+                autocomplete="off"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck={false}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+                style="
+                  width: 100%; 
+                  height: 50px; 
+                  background: #403c4a; 
+                  color: #cccccc; 
+                  padding: 10px 20px;
+                  font-size: 20px;
+                  border-radius: 0px!important;
+                  outline: none;
+                  border: none;
+                "
+              />
+            </div>
+            <div style="margin-top: 8px; margin-left: 22px; font-size: 12px; color: #858585;">
+              {filteredOptions().length} options available • Use ↑↓ to navigate, Enter to select
+            </div>
           </div>
 
           {/* Options List */}
-          <div style="flex: 1; overflow-y: auto; min-height: 0;">
+          <div style="flex: 1; overflow-y: auto; padding: 0 0;">
             <For each={filteredOptions()}>
               {(option, index) => (
                 <div
-                  style={{
-                    'padding': '12px 20px',
-                    'border-bottom': '1px solid #2d2d2d',
-                    'cursor': 'pointer',
-                    'transition': 'background-color 0.1s ease',
-                    'background': index() === activeIndex() ? '#094771' : 'transparent',
-                    'display': 'flex',
-                    'align-items': 'center',
-                    'flex-shrink': '0'
-                  }}
                   onClick={() => {
                     setActiveIndex(index());
                     handleSubmit();
-                    // Don't refocus here as the input will disappear after submit
                   }}
+                  style={`
+                    padding: 12px 20px; 
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                    cursor: pointer; 
+                    transition: all 0.2s ease;
+                    backdrop-filter: blur(5px);
+                    ${index() === activeIndex() ? 
+                      'background: rgba(0, 122, 204, 0.3); border-left: 3px solid #007acc; box-shadow: inset 0 0 20px rgba(0, 122, 204, 0.1);' : 
+                      'hover:background: rgba(255, 255, 255, 0.05);'
+                    }
+                  `}
                   onMouseEnter={() => setActiveIndex(index())}
                   onMouseDown={(e) => {
                     // Prevent blur from happening on mouse down
                     e.preventDefault();
                   }}
                 >
-                  <span style="margin-right: 12px; color: #ffd700; flex-shrink: 0;">📁</span>
-                  <div style="font-size: 14px; color: #cccccc; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    {option}
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1;">
+                      <div style="font-weight: 600; color: #e1e1e1; margin-bottom: 4px;">
+                        {option}
+                      </div>
+                    </div>
+                    <div style="color: #007acc; font-size: 11px; opacity: 0.8; margin-left: 12px;">
+                      Option
+                    </div>
                   </div>
                 </div>
               )}
@@ -328,9 +386,13 @@ export const UIController: Component<UIControllerProps> = (props) => {
         </Show>
 
         <Show when={props.request?.type === 'html'}>
-          {/* HTML Display */}
+          {/* HTML Display with glass panel */}
           <div style="flex: 1; overflow-y: auto; overflow-x: hidden; padding: 20px; min-height: 0;">
-            <div style="max-width: 100%; word-wrap: break-word;">
+            <div class="glass-panel" style="
+              max-width: 100%; 
+              word-wrap: break-word;
+              padding: 20px;
+            ">
               <HtmlRenderer html={props.request?.html_content || ''} />
             </div>
           </div>
@@ -339,12 +401,33 @@ export const UIController: Component<UIControllerProps> = (props) => {
 
       <Show when={!props.request}>
         <div style="flex: 1; display: flex; align-items: center; justify-content: center; color: #858585; overflow: hidden;">
-          <div style="text-align: center; padding: 20px;">
-            <div style="font-size: 18px; margin-bottom: 12px;">Script Running...</div>
+          <div class="glass-panel" style="
+            text-align: center; 
+            padding: 40px;
+            margin: 20px;
+          ">
+            <div style="font-size: 18px; margin-bottom: 12px; color: #e1e1e1;">Script Running...</div>
             <div style="font-size: 14px; opacity: 0.7;">Waiting for next input from the script...</div>
           </div>
         </div>
       </Show>
+
+      {/* Footer with glass effect */}
+      <div style="
+        padding: 12px 20px; 
+        border-top: 1px solid rgba(255, 255, 255, 0.1); 
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        font-size: 12px; 
+        color: #858585;
+      ">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>UI Controller • Enhanced with frosted glass effects</div>
+          <Show when={props.request?.type === 'select'}>
+            <div>{filteredOptions().length} options</div>
+          </Show>
+        </div>
+      </div>
     </div>
   );
 };
