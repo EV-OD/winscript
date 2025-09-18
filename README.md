@@ -6,12 +6,15 @@
 
 ### 🎯 **Everyday Automation**
 - **System Information**: Get detailed hardware and software reports
-- **File Operations**: Batch rename, organize, and process files
+- **File Operations**: Batch rename, organize, and process files with comprehensive file system API
+- **Markdown Documents**: Create and render rich markdown content with live preview
 - **System Tasks**: Automate routine maintenance and monitoring
 - **Custom Workflows**: Create personalized automation scripts
 
 ### ✨ **Why Choose WinScript2?**
 - **Easy to Use**: Clean, intuitive interface - no command line required
+- **Rich Content**: Built-in markdown rendering with glass-styled dark theme
+- **File System Power**: Complete file and directory operations from scripts
 - **Keyboard Friendly**: Navigate everything with arrow keys and shortcuts
 - **Instant Results**: See your scripts run in real-time with visual feedback
 - **Safe & Reliable**: Sandboxed script execution protects your system
@@ -41,6 +44,58 @@
 | `Q` | Stop script and return to main menu |
 | `Escape` | Clear search |
 
+### 📝 **Rhai Scripting Features**
+
+#### **File System Operations**
+Complete file and directory management directly from your scripts:
+```rhai
+// File operations
+let content = read_file("path/to/file.txt");
+write_file("output.txt", "Hello World!");
+append_file("log.txt", "New log entry\n");
+
+// Directory operations
+create_dir_all("path/to/nested/dirs");
+list_files("./documents");
+file_exists("important.txt");
+
+// Path utilities
+let home = home_dir();
+let docs = path_join(home, "Documents");
+let filename = path_filename("/path/to/file.txt");
+```
+
+#### **Markdown Rendering**
+Create rich documentation and reports with live preview:
+```rhai
+// Quick markdown rendering
+md("# Hello World\n\nThis is **bold** text!");
+
+// Full markdown rendering
+render_markdown("
+# My Report
+- Item 1
+- Item 2
+
+```code
+let x = 42;
+```
+");
+```
+
+#### **UI Interactions**
+Interactive script elements with glass-styled interface:
+```rhai
+// Get user input
+let name = ask_text("Enter your name:");
+let age = ask_number("Enter your age:");
+let choice = ask_select("Choose option:", ["A", "B", "C"]);
+
+// Display results
+show_message("Result", "Processing complete!");
+render_html("<h1>Custom HTML Content</h1>");
+```
+
 ### 🎛️ **Script Organization**
 Scripts are automatically organized into categories:
 - **Built-in Scripts**: Ready-to-use examples and utilities
@@ -69,7 +124,9 @@ WinScript2 is built with modern technologies for performance, security, and exte
 
 #### Key Features
 - **Script Management**: Custom Rust-based script discovery and categorization
-- **UI Kit Integration**: Enhanced Rhai scripting capabilities with UI components
+- **File System Kit**: Complete CRUD operations (read, write, create, delete files/directories)
+- **Markdown Rendering**: Live markdown preview with pulldown-cmark parser and glass UI
+- **UI Kit Integration**: Enhanced Rhai scripting capabilities with rich UI components
 - **Event System**: Global keyboard and UI event handling with persistent focus
 - **Environment Variables**: Configurable script paths via `WIN_SCRIPT2_PATH`
 
@@ -126,11 +183,18 @@ set WIN_SCRIPT2_PATH=D:\path\to\your\scripts
 ```
 user_scripts/
 ├── built_in_scripts/
-│   ├── system_info.rhai
-│   ├── greeting_script.rhai
-│   └── html_demo.rhai
+│   ├── system_info.rhai          # System hardware/software info
+│   ├── greeting_script.rhai      # Simple greeting demo
+│   ├── file_system_demo.rhai     # File operations showcase
+│   ├── markdown_demo.rhai        # Comprehensive markdown examples
+│   ├── quick_md_test.rhai        # Quick markdown test
+│   ├── log_manager.rhai          # Log file management
+│   ├── calculator.rhai           # Interactive calculator
+│   ├── file_organizer.rhai       # Batch file operations
+│   └── html_demo.rhai           # HTML rendering demo
 └── custom_scripts/
-    └── your_scripts.rhai
+    ├── todo_list_creator.rhai    # Task management
+    └── your_scripts.rhai         # Your custom scripts
 ```
 
 ### Script Metadata
@@ -168,9 +232,11 @@ Scripts are automatically categorized with metadata:
 - **Rhai v1.17**: Embedded scripting engine
 
 ### Key Libraries
-- **Script Management**: Custom Rust-based script discovery
-- **UI Kit Integration**: Enhanced Rhai scripting capabilities
-- **Event System**: Global keyboard and UI event handling
+- **Script Management**: Custom Rust-based script discovery and categorization
+- **File System Kit**: Cross-platform file operations with `dirs` crate integration
+- **Markdown Parser**: `pulldown-cmark` for CommonMark-compliant rendering
+- **UI Kit Integration**: Enhanced Rhai scripting with interactive UI components
+- **Event System**: Global keyboard and UI event handling with focus persistence
 
 ## Development
 
@@ -197,6 +263,93 @@ src-tauri/
 pnpm tauri build
 
 # Output will be in src-tauri/target/release/
+```
+
+## Example Scripts
+
+### 📁 **File System Automation**
+```rhai
+// Organize downloads folder
+print("🗂️ Organizing Downloads...");
+
+let downloads = path_join(home_dir(), "Downloads");
+let organized = path_join(downloads, "Organized");
+
+// Create organized folders
+create_dir_all(path_join(organized, "Images"));
+create_dir_all(path_join(organized, "Documents"));
+create_dir_all(path_join(organized, "Archives"));
+
+// Process files
+let files = list_files(downloads);
+for file in files {
+    if file.contains(".jpg") || file.contains(".png") {
+        // Move images
+        let dest = path_join(organized, "Images", path_filename(file));
+        copy_file(file, dest);
+    }
+}
+
+print("✅ Downloads organized successfully!");
+```
+
+### 📊 **System Report with Markdown**
+```rhai
+// Generate system report
+print("📊 Generating System Report...");
+
+let report = "# System Report\n\n";
+report += "## Current Directory\n";
+report += "📁 " + current_dir() + "\n\n";
+
+report += "## Home Directory\n";
+report += "🏠 " + home_dir() + "\n\n";
+
+report += "## Temporary Directory\n"; 
+report += "🗂️ " + temp_dir() + "\n\n";
+
+report += "## Available Scripts\n";
+let scripts = list_files("./user_scripts/built_in_scripts");
+for script in scripts {
+    report += "- " + path_filename(script) + "\n";
+}
+
+// Render the report
+md(report);
+```
+
+### 📝 **Interactive Todo Manager**
+```rhai
+print("📝 Todo List Manager");
+
+let todos = [];
+loop {
+    let action = ask_select("Choose action:", [
+        "Add Todo", 
+        "View Todos", 
+        "Save to File", 
+        "Exit"
+    ]);
+    
+    if action == "Add Todo" {
+        let todo = ask_text("Enter todo item:");
+        todos.push("- [ ] " + todo);
+        print("✅ Added: " + todo);
+    }
+    else if action == "View Todos" {
+        let content = "# My Todo List\n\n" + todos.join("\n");
+        md(content);
+    }
+    else if action == "Save to File" {
+        let filename = ask_text("Filename (without .md):");
+        let content = "# Todo List\n\n" + todos.join("\n");
+        write_file(filename + ".md", content);
+        print("💾 Saved to " + filename + ".md");
+    }
+    else {
+        break;
+    }
+}
 ```
 
 ### Recommended IDE Setup
