@@ -3,6 +3,7 @@ mod kits;
 mod scripts;
 mod rhai_engine;
 mod script_manager;
+mod fs_kit;
 
 use ui_controller::{ui_response, demo_ui_controller};
 use kits::{demo_kit_usage, ui_kit::Kit};

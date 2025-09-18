@@ -1,6 +1,7 @@
 use rhai::{Engine, Scope, EvalAltResult, Array};
 use std::path::PathBuf;
 use crate::kits::ui_kit::Kit;
+use crate::fs_kit::FileSystemKit;
 use std::sync::{Arc, Mutex};
 
 /// Rhai script runner that handles script execution and Kit integration
@@ -22,7 +23,10 @@ impl RhaiScriptRunner {
         // Register Kit functions with Rhai engine
         Self::register_kit_functions(&mut engine, kit_shared.clone());
         
-        println!("🟣 RhaiScriptRunner: Engine initialized with Kit integration");
+        // Register file system functions
+        FileSystemKit::register_functions(&mut engine);
+        
+        println!("🟣 RhaiScriptRunner: Engine initialized with Kit integration and FileSystem");
         
         Self { engine }
     }
@@ -32,7 +36,10 @@ impl RhaiScriptRunner {
         let mut engine = Engine::new();
         engine.set_optimization_level(rhai::OptimizationLevel::Simple);
         
-        println!("🟣 RhaiScriptRunner: Basic engine initialized (no Kit)");
+        // Register file system functions even in basic mode
+        FileSystemKit::register_functions(&mut engine);
+        
+        println!("🟣 RhaiScriptRunner: Basic engine initialized with FileSystem (no Kit)");
         
         Self { engine }
     }
