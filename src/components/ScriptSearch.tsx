@@ -177,9 +177,6 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
     <div class={getGlassClass()} style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
       {/* Search Header with enhanced glass effect */}
       <div style="
-        padding: 20px 20px 0; 
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(10px);
       ">
         <div style="position: relative; display: flex; align-items: center;">
@@ -201,13 +198,12 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
             data-enable-grammarly="false"
             style="
               width: 100%; 
-              height: 40px; 
-              background: #2d2d30; 
-              border: 1px solid #3c3c3c; 
+              height: 50px; 
+              background: #403c4a; 
               color: #cccccc; 
-              padding: 0 12px;
-              font-size: 14px;
-              border-radius: 4px;
+              padding: 10px 20px;
+              font-size: 20px;
+              border-radius: 0px!important;
               outline: none;
             "
           />
@@ -217,13 +213,13 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
             </div>
           </Show>
         </div>
-        <div style="margin-top: 8px; font-size: 12px; color: #858585;">
+        <div style="margin-top: 8px;margin-left:22px; font-size: 12px; color: #858585;">
           {rhaiScripts().length} Rhai scripts available • Use ↑↓ to navigate, Enter to select
         </div>
       </div>
 
       {/* Scripts List */}
-      <div style="flex: 1; overflow-y: auto; padding: 10px 0;">
+      <div style="flex: 1; overflow-y: auto; padding: 0 0;">
         <Show when={filteredScripts().length > 0} fallback={
           <div class="glass-panel" style="
             margin: 20px; 
@@ -265,15 +261,15 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
                         {script.description}
                       </div>
                     </Show>
-                    <Show when={script.category}>
+                    {/* <Show when={script.category}>
                       <div style="font-size: 11px; color: #858585; text-transform: uppercase; letter-spacing: 0.5px;">
                         {script.category}
                       </div>
-                    </Show>
+                    </Show> */}
                   </div>
-                  <div style="color: #007acc; font-size: 11px; opacity: 0.8; margin-left: 12px;">
+                  {/* <div style="color: #007acc; font-size: 11px; opacity: 0.8; margin-left: 12px;">
                     Rhai
-                  </div>
+                  </div> */}
                 </div>
               </div>
             )}
