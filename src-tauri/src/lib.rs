@@ -9,11 +9,71 @@ use kits::{demo_kit_usage, ui_kit::Kit};
 use scripts::{greeting_script, html_demo_script};
 use rhai_engine::RhaiScriptRunner;
 use script_manager::{ScriptManager, ScriptInfo};
+use tauri::Manager;
+
+// Import platform-specific blur functions
+#[cfg(target_os = "windows")]
+use window_vibrancy::{apply_blur, apply_acrylic, apply_mica};
+
+#[cfg(target_os = "macos")]
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
+
+#[cfg(target_os = "linux")]
+use window_vibrancy::apply_blur;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
+}
+
+// Platform detection command
+#[tauri::command]
+fn get_platform() -> String {
+    #[cfg(target_os = "windows")]
+    return "windows".to_string();
+    
+    #[cfg(target_os = "macos")]
+    return "macos".to_string();
+    
+    #[cfg(target_os = "linux")]
+    return "linux".to_string();
+    
+    #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+    return "unknown".to_string();
+}
+
+// Cross-platform blur setup function
+fn setup_window_blur(window: &tauri::WebviewWindow) -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(target_os = "windows")]
+    {
+        // Disable native Windows blur to use CSS-only glass effects
+        println!("🪟 Using CSS-only glass effects on Windows");
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // macOS: Use vibrancy with dark appearance
+        apply_vibrancy(
+            window, 
+            NSVisualEffectMaterial::Sidebar,
+            Some(NSVisualEffectState::Active), 
+            Some(10.0)
+        )?;
+        println!("🍎 macOS vibrancy applied");
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Linux: Basic blur (depends on compositor support)
+        if let Err(e) = apply_blur(window, Some((18, 18, 18, 125))) {
+            println!("🐧 Linux blur failed (compositor may not support it): {}", e);
+        } else {
+            println!("🐧 Linux blur applied");
+        }
+    }
+
+    Ok(())
 }
 
 // List all available Rhai scripts
@@ -109,7 +169,17 @@ async fn run_rhai_script(scriptId: String, app_handle: tauri::AppHandle) -> Resu
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script])
+        .setup(|app| {
+            let window = app.get_webview_window("main").unwrap();
+            
+            // Apply blur effects
+            if let Err(e) = setup_window_blur(&window) {
+                eprintln!("❌ Failed to apply window blur: {}", e);
+            }
+
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

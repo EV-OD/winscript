@@ -12,10 +12,17 @@
   "app": {
     "windows": [
       {
-        "title": "tauri-app",
-        "width": 800,
+        "title": "WinScript2 - Rhai Scripting Platform",
+        "transparent": false,
+        "width": 600,
         "height": 600,
-        "decorations": false
+        "decorations": false,
+        "resizable": true,
+        "maximizable": true,
+        "minimizable": true,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "theme": "Dark"
       }
     ],
     "security": {

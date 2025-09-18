@@ -227,7 +227,7 @@ export const UIController: Component<UIControllerProps> = (props) => {
   });
 
   return (
-    <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column; overflow: hidden;">
+    <div style="width: 100vw; height: 100vh; background: #3c38643d; display: flex; flex-direction: column; overflow: hidden;">
       <Show when={props.request}>
         <Show when={props.request?.type === 'input'}>
           {/* Input Interface */}

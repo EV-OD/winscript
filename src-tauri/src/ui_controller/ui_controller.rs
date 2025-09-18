@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock};
-use tauri::{Manager, Emitter};
+use tauri::Emitter;
 use tokio::sync::oneshot;
 use uuid::Uuid;
 

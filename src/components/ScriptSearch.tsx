@@ -12,13 +12,25 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
   const [isLoading, setIsLoading] = createSignal(false);
   const [rhaiScripts, setRhaiScripts] = createSignal<ScriptInfo[]>([]);
   const [scriptsLoaded, setScriptsLoaded] = createSignal(false);
+  const [platform, setPlatform] = createSignal('unknown');
   
   let searchInputRef: HTMLInputElement | undefined;
 
-  // Load Rhai scripts on mount
+  // Load Rhai scripts and detect platform on mount
   onMount(async () => {
     try {
       setIsLoading(true);
+      
+      // Detect platform for styling
+      try {
+        const platformName = await invoke('get_platform');
+        setPlatform(platformName as string);
+        console.log('🔍 Platform detected:', platformName);
+      } catch (error) {
+        console.error('Failed to detect platform:', error);
+      }
+      
+      // Load scripts
       const scripts = await UIService.listRhaiScripts();
       setRhaiScripts(scripts);
       setScriptsLoaded(true);
@@ -154,10 +166,22 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
     maintainFocus();
   };
 
+  // Get glass effect class based on platform
+  const getGlassClass = () => {
+    const base = 'glass-container';
+    const platformClass = `glass-${platform()}`;
+    return `${base} ${platformClass}`;
+  };
+
   return (
-    <div style="width: 100vw; height: 100vh; background: #1e1e1e; display: flex; flex-direction: column;">
-      {/* Search Header */}
-      <div style="padding: 20px 20px 0; border-bottom: 1px solid #3c3c3c;">
+    <div class={getGlassClass()} style="width: 100vw; height: 100vh; display: flex; flex-direction: column;">
+      {/* Search Header with enhanced glass effect */}
+      <div style="
+        padding: 20px 20px 0; 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+      ">
         <div style="position: relative; display: flex; align-items: center;">
           <input
             ref={searchInputRef}
@@ -201,7 +225,12 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
       {/* Scripts List */}
       <div style="flex: 1; overflow-y: auto; padding: 10px 0;">
         <Show when={filteredScripts().length > 0} fallback={
-          <div style="padding: 20px; text-align: center; color: #858585;">
+          <div class="glass-panel" style="
+            margin: 20px; 
+            padding: 20px; 
+            text-align: center; 
+            color: #858585;
+          ">
             <Show when={searchQuery()} fallback={
               <div>No Rhai scripts found</div>
             }>
@@ -215,10 +244,14 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
                 onClick={() => handleScriptSelect(script)}
                 style={`
                   padding: 12px 20px; 
-                  border-bottom: 1px solid #2d2d30;
+                  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
                   cursor: pointer; 
-                  transition: background-color 0.1s;
-                  ${index() === selectedIndex() ? 'background: #094771; border-left: 3px solid #007acc;' : ''}
+                  transition: all 0.2s ease;
+                  backdrop-filter: blur(5px);
+                  ${index() === selectedIndex() ? 
+                    'background: rgba(0, 122, 204, 0.3); border-left: 3px solid #007acc; box-shadow: inset 0 0 20px rgba(0, 122, 204, 0.1);' : 
+                    'hover:background: rgba(255, 255, 255, 0.05);'
+                  }
                 `}
                 onMouseEnter={() => setSelectedIndex(index())}
               >
@@ -248,10 +281,17 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
         </Show>
       </div>
 
-      {/* Footer */}
-      <div style="padding: 12px 20px; border-top: 1px solid #3c3c3c; background: #252526; font-size: 12px; color: #858585;">
+      {/* Footer with glass effect */}
+      <div style="
+        padding: 12px 20px; 
+        border-top: 1px solid rgba(255, 255, 255, 0.1); 
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        font-size: 12px; 
+        color: #858585;
+      ">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>Rhai Script Runner • Enhanced with environment variable support</div>
+          <div>Rhai Script Runner • Enhanced with frosted glass effects</div>
           <div>{filteredScripts().length} scripts</div>
         </div>
       </div>
