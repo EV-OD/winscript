@@ -15,8 +15,9 @@ html, body, #root {
     #1e1d2e 65%,
     #181829 80%,
     #0f0f18 100%) !important;
-  background-size: 400% 400%;
-  animation: gradientShift 25s ease infinite;
+  background-size: 300% 300%;
+  animation: gradientShift 18s ease infinite;
+}
 }
 
 @keyframes gradientShift {
@@ -27,11 +28,11 @@ html, body, #root {
 
 /* Enhanced glass effect for main container with blur overlay */
 .glass-container {
-  background: rgba(255, 255, 255, 0.025) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(40px) saturate(110%);
   -webkit-backdrop-filter: blur(40px) saturate(110%);
   border-radius: 10px;
