@@ -181,6 +181,159 @@ impl Kit {
         }
     }
 
+    /// Sync wrapper for render_markdown - converts markdown to HTML and renders it
+    pub fn render_markdown_sync(&mut self, markdown_content: &str) -> bool {
+        use pulldown_cmark::{Parser, Options, html};
+        
+        // Reset the awaiting flag before rendering so UI stays visible after completion
+        println!("🟣 Kit: render_markdown_sync called - converting markdown to HTML");
+        self.has_awaiting_components = false;
+        
+        // Configure markdown parser with common extensions
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_STRIKETHROUGH);
+        options.insert(Options::ENABLE_TABLES);
+        options.insert(Options::ENABLE_FOOTNOTES);
+        options.insert(Options::ENABLE_TASKLISTS);
+        options.insert(Options::ENABLE_SMART_PUNCTUATION);
+        
+        // Parse markdown and convert to HTML
+        let parser = Parser::new_ext(markdown_content, options);
+        let mut html_output = String::new();
+        html::push_html(&mut html_output, parser);
+        
+        // Simple styling that works with existing glass container - no extra background layers
+        let styled_html = format!(
+            r#"
+            <style>
+                /* Simple dark theme styling - no glass backgrounds */
+                body, * {{
+                    color: #ffffff !important;
+                    background: none !important;
+                }}
+                
+                /* Headers */
+                h1, h2, h3, h4, h5, h6 {{ 
+                    margin-top: 1.5em; 
+                    margin-bottom: 0.5em; 
+                    color: #ffffff !important; 
+                    font-weight: 600;
+                }}
+                
+                h1 {{ 
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.3); 
+                    padding-bottom: 0.3em; 
+                }}
+                
+                h2 {{ 
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.2); 
+                    padding-bottom: 0.2em; 
+                }}
+                
+                /* Code styling - minimal dark background */
+                code {{ 
+                    background: rgba(0, 0, 0, 0.3) !important; 
+                    color: #e1e5e9 !important;
+                    padding: 3px 6px; 
+                    border-radius: 4px; 
+                    font-family: 'Consolas', 'Monaco', 'Courier New', monospace; 
+                }}
+                
+                pre {{ 
+                    background: rgba(0, 0, 0, 0.3) !important; 
+                    color: #e1e5e9 !important;
+                    padding: 16px; 
+                    border-radius: 8px; 
+                    overflow-x: auto; 
+                    margin: 16px 0;
+                }}
+                
+                pre code {{ 
+                    background: none !important; 
+                    padding: 0; 
+                }}
+                
+                /* Blockquotes */
+                blockquote {{ 
+                    border-left: 4px solid rgba(255, 255, 255, 0.4); 
+                    margin: 16px 0; 
+                    padding: 16px; 
+                    color: rgba(255, 255, 255, 0.8) !important; 
+                    font-style: italic;
+                    background: rgba(0, 0, 0, 0.15) !important;
+                    border-radius: 6px;
+                }}
+                
+                /* Tables */
+                table {{ 
+                    border-collapse: collapse; 
+                    width: 100%; 
+                    margin: 16px 0; 
+                }}
+                
+                th, td {{ 
+                    border: 1px solid rgba(255, 255, 255, 0.15); 
+                    padding: 8px 12px; 
+                    text-align: left; 
+                    color: #ffffff !important;
+                }}
+                
+                th {{ 
+                    background: rgba(0, 0, 0, 0.2) !important; 
+                    font-weight: 600; 
+                }}
+                
+                /* Lists */
+                ul, ol {{ 
+                    color: #ffffff !important;
+                }}
+                
+                li {{ 
+                    color: #ffffff !important;
+                }}
+                
+                /* Links */
+                a {{ 
+                    color: #64b5f6 !important; 
+                    text-decoration: none; 
+                }}
+                
+                a:hover {{ 
+                    color: #90caf9 !important;
+                }}
+                
+                /* Paragraphs */
+                p {{
+                    color: rgba(255, 255, 255, 0.9) !important;
+                }}
+                
+                /* Emphasis */
+                strong {{
+                    color: #ffffff !important;
+                    font-weight: 600;
+                }}
+                
+                em {{
+                    color: rgba(255, 255, 255, 0.9) !important;
+                }}
+            </style>
+            {}
+            "#,
+            html_output
+        );
+        
+        match self.render_html("Markdown Content", &styled_html) {
+            Ok(_) => {
+                println!("🟣 Kit: Markdown rendered successfully as HTML, UI will stay visible");
+                true
+            },
+            Err(e) => {
+                eprintln!("Error in render_markdown_sync: {}", e);
+                false
+            }
+        }
+    }
+
     /// Sync wrapper for show_message - for use in Rhai scripts (already sync!)
     pub fn show_message_sync(&self, title: &str, message: &str) -> bool {
         match self.show_message(title, message) {

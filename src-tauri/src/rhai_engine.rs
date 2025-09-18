@@ -90,6 +90,24 @@ impl RhaiScriptRunner {
                 kit_guard.render_html_sync(html_content)
             });
         }
+
+        // Register render_markdown function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("render_markdown", move |markdown_content: &str| -> bool {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.render_markdown_sync(markdown_content)
+            });
+        }
+
+        // Register md function as a short alias for render_markdown
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("md", move |markdown_content: &str| -> bool {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.render_markdown_sync(markdown_content)
+            });
+        }
         
         // Register show_message function
         {
