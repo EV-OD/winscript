@@ -92,6 +92,8 @@ fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<
     let menu = Menu::with_items(app, &[&show_i, &hide_i, &quit_i])?;
 
     TrayIconBuilder::with_id("main-tray")
+        .icon(app.default_window_icon().unwrap().clone())
+        .tooltip("WinScript2 - Ctrl+Shift+J to open")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| match event {
