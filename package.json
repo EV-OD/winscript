@@ -8,7 +8,16 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:frontend": "vite build",
+    "build:tauri": "tauri build",
+    "build:project": "pnpm run build:frontend && pnpm run build:tauri",
+    "build:inno": "powershell -ExecutionPolicy Bypass -File ./build_inno_setup.ps1",
+    "clean": "powershell -Command \"if (Test-Path 'dist') { Remove-Item -Recurse -Force 'dist' }; if (Test-Path 'src-tauri/target/release') { Remove-Item -Recurse -Force 'src-tauri/target/release' }\"",
+    "release": "pnpm run clean && pnpm run build:project && pnpm run build:inno",
+    "release:full": "pnpm run clean && pnpm install && pnpm run build:project && pnpm run build:inno && pnpm run package:info",
+    "package:info": "powershell -Command \"Write-Host ''; Write-Host '🎉 Release Complete!' -ForegroundColor Green; Write-Host ''; Write-Host '📦 Available Installers:' -ForegroundColor Cyan; if (Test-Path 'src-tauri/target/release/bundle/msi/*.msi') { Write-Host '  ✅ MSI Installer' -ForegroundColor Green } else { Write-Host '  ❌ MSI Installer' -ForegroundColor Red }; if (Test-Path 'src-tauri/target/release/bundle/nsis/*.exe') { Write-Host '  ✅ NSIS Installer' -ForegroundColor Green } else { Write-Host '  ❌ NSIS Installer' -ForegroundColor Red }; if (Test-Path 'src-tauri/target/release/bundle/inno/*.exe') { Write-Host '  ✅ Inno Setup Installer' -ForegroundColor Green } else { Write-Host '  ❌ Inno Setup Installer' -ForegroundColor Red }; Write-Host '  ✅ Standalone Executable' -ForegroundColor Green; Write-Host ''; Write-Host '📁 Output Locations:' -ForegroundColor Cyan; Write-Host '  MSI: src-tauri/target/release/bundle/msi/' -ForegroundColor Yellow; Write-Host '  NSIS: src-tauri/target/release/bundle/nsis/' -ForegroundColor Yellow; Write-Host '  Inno: src-tauri/target/release/bundle/inno/' -ForegroundColor Yellow; Write-Host '  EXE: src-tauri/target/release/tauri-app.exe' -ForegroundColor Yellow; Write-Host ''\"",
+    "test:install": "powershell -ExecutionPolicy Bypass -File ./test_installation.bat"
   },
   "license": "MIT",
   "dependencies": {

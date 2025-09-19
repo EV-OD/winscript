@@ -34,9 +34,9 @@ LicenseFile=LICENSE
 InfoBeforeFile=installer\INSTALL_INFO.txt
 InfoAfterFile=installer\POST_INSTALL_INFO.txt
 
-; Visual Settings
-WizardImageFile=installer\WizardImage.bmp
-WizardSmallImageFile=installer\WizardSmallImage.bmp
+; Visual Settings (commented out - files don't exist)
+; WizardImageFile=installer\WizardImage.bmp
+; WizardSmallImageFile=installer\WizardSmallImage.bmp
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
