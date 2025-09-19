@@ -15,7 +15,7 @@ use tauri::Manager;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{TrayIcon, TrayIconBuilder, TrayIconEvent},
-    Runtime,
+    Runtime, Emitter,
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt};
 
@@ -49,6 +49,17 @@ fn get_platform() -> String {
     
     #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
     return "unknown".to_string();
+}
+
+// Reset UI state to script search page
+#[tauri::command]
+async fn reset_ui_state(window: tauri::WebviewWindow) {
+    println!("🔄 Resetting UI state to script search page");
+    
+    // Emit an event to the frontend to reset to script search page
+    if let Err(e) = window.emit("reset-to-script-search", ()) {
+        eprintln!("Failed to emit reset-to-script-search event: {}", e);
+    }
 }
 
 // Cross-platform blur setup function
@@ -102,6 +113,11 @@ fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.set_focus();
+                    
+                    // Reset UI to script search page
+                    if let Err(e) = window.emit("reset-to-script-search", ()) {
+                        eprintln!("Failed to emit reset-to-script-search event: {}", e);
+                    }
                 }
             }
             _ => {}
@@ -111,6 +127,11 @@ fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.set_focus();
+                    
+                    // Reset UI to script search page
+                    if let Err(e) = window.emit("reset-to-script-search", ()) {
+                        eprintln!("Failed to emit reset-to-script-search event: {}", e);
+                    }
                 }
             }
             "hide" => {
@@ -244,6 +265,11 @@ pub fn run() {
                 if let Some(window) = shortcut_handle.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.set_focus();
+                    
+                    // Reset UI to script search page
+                    if let Err(e) = window.emit("reset-to-script-search", ()) {
+                        eprintln!("Failed to emit reset-to-script-search event: {}", e);
+                    }
                 }
             });
             
@@ -270,7 +296,7 @@ pub fn run() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform])
+        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform, reset_ui_state])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

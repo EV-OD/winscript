@@ -1,10 +1,11 @@
-import { Component, createSignal, Show, createEffect } from "solid-js";
+import { Component, createSignal, Show, createEffect, onMount, onCleanup } from "solid-js";
 import "./App.css";
 import { UIController } from "./UIController";
 import { ScriptSearch } from "./components";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useUIEvents } from "./hooks/useUIEvents";
 import type { UIRequest } from "./UIController";
+import { listen } from '@tauri-apps/api/event';
 
 // Global type declarations
 declare global {
@@ -21,6 +22,21 @@ const App: Component = () => {
   
   // State to control what to show
   const [showUIController, setShowUIController] = createSignal(false);
+
+  // Listen for reset-to-script-search event from backend
+  onMount(() => {
+    const setupResetListener = async () => {
+      const unlisten = await listen('reset-to-script-search', () => {
+        console.log('🔄 App: Received reset-to-script-search event, returning to script search');
+        setShowUIController(false);
+        clearRequest();
+      });
+      
+      onCleanup(unlisten);
+    };
+    
+    setupResetListener();
+  });
 
   // Automatically show UIController when a request is received
   createEffect(() => {
