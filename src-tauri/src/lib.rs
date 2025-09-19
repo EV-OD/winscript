@@ -15,7 +15,7 @@ use tauri::Manager;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{TrayIcon, TrayIconBuilder, TrayIconEvent},
-    Runtime, Emitter,
+    Runtime, Emitter, image::Image,
 };
 use tauri_plugin_global_shortcut::{GlobalShortcutExt};
 
@@ -103,7 +103,12 @@ fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<
     let menu = Menu::with_items(app, &[&show_i, &hide_i, &quit_i])?;
 
     TrayIconBuilder::with_id("main-tray")
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(
+            // Try to load specific icon file, fallback to default
+            Image::from_path("icons/icon.ico")
+                .or_else(|_| Image::from_path("icons/32x32.png"))
+                .unwrap_or_else(|_| app.default_window_icon().unwrap().clone())
+        )
         .tooltip("WinScript2 - Ctrl+Shift+J to open")
         .menu(&menu)
         .show_menu_on_left_click(false)

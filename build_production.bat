@@ -47,7 +47,7 @@ echo   - Executable: src-tauri\target\release\tauri-app.exe
 
 echo.
 echo =====================================================
-echo   Build completed successfully!
+echo   Build completed successfully! (v1.0.1 with custom logo)
 echo   
 echo   Available Installers:
 echo   1. Run the MSI installer (Enterprise deployment)

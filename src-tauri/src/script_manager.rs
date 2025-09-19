@@ -36,17 +36,17 @@ impl ScriptManager {
             return PathBuf::from(scripts_path);
         }
         
-        // Try WINSCRIPT2_HOME environment variable
-        if let Ok(home_path) = env::var("WINSCRIPT2_HOME") {
-            let scripts_path = PathBuf::from(home_path).join("Scripts");
-            println!("🟣 Using WINSCRIPT2_HOME: {}", scripts_path.display());
-            return scripts_path;
-        }
-        
-        // Fallback to Documents/WinScript2/Scripts
+        // Default to Documents/WinScript2/Scripts (user-friendly location)
         if let Some(docs_dir) = dirs::document_dir() {
             let scripts_path = docs_dir.join("WinScript2").join("Scripts");
             println!("🟣 Using Documents folder: {}", scripts_path.display());
+            return scripts_path;
+        }
+        
+        // Try WINSCRIPT2_HOME environment variable as fallback
+        if let Ok(home_path) = env::var("WINSCRIPT2_HOME") {
+            let scripts_path = PathBuf::from(home_path).join("Scripts");
+            println!("🟣 Using WINSCRIPT2_HOME: {}", scripts_path.display());
             return scripts_path;
         }
         
@@ -73,28 +73,31 @@ impl ScriptManager {
         // Get user scripts path (with environment variable support)
         let user_scripts_path = Self::get_user_scripts_path();
         
-        // Load built-in Rhai scripts
-        let built_in_dir = if user_scripts_path.join("built_in_scripts").exists() {
-            user_scripts_path.join("built_in_scripts")
-        } else {
-            // Fallback to project directory
-            self.project_root.join("user_scripts").join("built_in_scripts")
-        };
-        
-        if built_in_dir.exists() {
-            self.load_scripts_from_directory(&built_in_dir, "Built-in", ScriptType::Rhai)?;
+        // Load built-in Rhai scripts from app installation
+        let app_scripts_dir = self.project_root.join("user_scripts").join("built_in_scripts");
+        if app_scripts_dir.exists() {
+            self.load_scripts_from_directory(&app_scripts_dir, "Built-in", ScriptType::Rhai)?;
         }
         
-        // Load custom Rhai scripts
-        let custom_dir = if user_scripts_path.join("custom_scripts").exists() {
-            user_scripts_path.join("custom_scripts")
+        // Load user custom scripts directly from Documents folder
+        if user_scripts_path.exists() {
+            self.load_scripts_from_directory(&user_scripts_path, "Custom", ScriptType::Rhai)?;
         } else {
-            // Fallback to project directory  
+            // Create the directory if it doesn't exist
+            if let Err(e) = fs::create_dir_all(&user_scripts_path) {
+                println!("⚠️ Could not create user scripts directory: {}", e);
+            }
+        }
+        
+        // Also check legacy custom_scripts folder for backward compatibility
+        let legacy_custom_dir = if user_scripts_path.parent().is_some() {
+            user_scripts_path.parent().unwrap().join("custom_scripts")
+        } else {
             self.project_root.join("user_scripts").join("custom_scripts")
         };
         
-        if custom_dir.exists() {
-            self.load_scripts_from_directory(&custom_dir, "Custom", ScriptType::Rhai)?;
+        if legacy_custom_dir.exists() && legacy_custom_dir != user_scripts_path {
+            self.load_scripts_from_directory(&legacy_custom_dir, "Legacy", ScriptType::Rhai)?;
         }
         
         println!("🟣 ScriptManager: Loaded {} scripts total from {:?}", self.scripts.len(), user_scripts_path);

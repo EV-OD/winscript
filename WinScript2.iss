@@ -2,8 +2,8 @@
 ; Basic Information
 AppId={{B8F7A2C4-9E3F-4D1A-8C5B-7F6E2A1D9C8E}
 AppName=WinScript2
-AppVersion=1.0.0
-AppVerName=WinScript2 1.0.0
+AppVersion=1.0.1
+AppVerName=WinScript2 1.0.1
 AppPublisher=WinScript2 Team
 AppPublisherURL=https://github.com/EV-OD/winscript
 AppSupportURL=https://github.com/EV-OD/winscript/issues
@@ -17,7 +17,7 @@ DefaultGroupName=WinScript2
 AllowNoIcons=yes
 PrivilegesRequired=admin
 OutputDir=src-tauri\target\release\bundle\inno
-OutputBaseFilename=WinScript2_1.0.0_x64_inno_setup
+OutputBaseFilename=WinScript2_1.0.1_x64_inno_setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -53,9 +53,10 @@ Name: "startmenu"; Description: "Create Start Menu shortcuts"; GroupDescription:
 Source: "src-tauri\target\release\tauri-app.exe"; DestDir: "{app}"; DestName: "WinScript2.exe"; Flags: ignoreversion
 Source: "src-tauri\target\release\tauri_app.pdb"; DestDir: "{app}"; Flags: ignoreversion; Check: IsDebugVersion
 
-; Built-in Scripts
+; Built-in Scripts (to Program Files)
 Source: "user_scripts\built_in_scripts\*"; DestDir: "{app}\Scripts\built_in_scripts"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "user_scripts\custom_scripts\*"; DestDir: "{app}\Scripts\custom_scripts"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist
+; User Scripts (to Documents folder)
+Source: "user_scripts\custom_scripts\*"; DestDir: "{userdocs}\WinScript2\Scripts"; Flags: ignoreversion recursesubdirs createallsubdirs onlyifdoesntexist
 
 ; Documentation
 Source: "PRODUCTION_README.md"; DestDir: "{app}"; DestName: "README.md"; Flags: ignoreversion
@@ -91,12 +92,12 @@ Root: HKCR; Subkey: "WinScript2.RhaiScript\shell\open\command"; ValueType: strin
 
 ; Environment Variables
 Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "WINSCRIPT2_HOME"; ValueData: "{app}"; Flags: preservestringtype; Tasks: envvars
-Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "WINSCRIPT2_SCRIPTS"; ValueData: "{app}\Scripts"; Flags: preservestringtype; Tasks: envvars
+Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "WINSCRIPT2_SCRIPTS"; ValueData: "{userdocs}\WinScript2\Scripts"; Flags: preservestringtype; Tasks: envvars
 
 ; Application Settings
 Root: HKCU; Subkey: "Software\WinScript2"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\WinScript2"; ValueType: string; ValueName: "Version"; ValueData: "1.0.0"
-Root: HKCU; Subkey: "Software\WinScript2"; ValueType: string; ValueName: "ScriptsPath"; ValueData: "{app}\Scripts"
+Root: HKCU; Subkey: "Software\WinScript2"; ValueType: string; ValueName: "Version"; ValueData: "1.0.1"
+Root: HKCU; Subkey: "Software\WinScript2"; ValueType: string; ValueName: "ScriptsPath"; ValueData: "{userdocs}\WinScript2\Scripts"
 
 [Dirs]
 ; Create necessary directories
@@ -164,9 +165,15 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ResultCode: Integer;
+  UserScriptsDir: String;
 begin
   if CurStep = ssPostInstall then
   begin
+    // Create user scripts directory in Documents
+    UserScriptsDir := ExpandConstant('{userdocs}\WinScript2\Scripts');
+    if not DirExists(UserScriptsDir) then
+      CreateDir(UserScriptsDir);
+    
     // Kill any running instances
     Exec('taskkill', '/f /im tauri-app.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec('taskkill', '/f /im WinScript2.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
