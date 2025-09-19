@@ -97,7 +97,7 @@ fn setup_window_blur(_window: &tauri::WebviewWindow) -> Result<(), Box<dyn std::
 
 // Create system tray
 fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<R>> {
-    let show_i = MenuItem::with_id(app, "show", "Show WinScript2", true, None::<&str>)?;
+    let show_i = MenuItem::with_id(app, "show", "Show SnapRun", true, None::<&str>)?;
     let hide_i = MenuItem::with_id(app, "hide", "Hide to Tray", true, None::<&str>)?;
     let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&show_i, &hide_i, &quit_i])?;
@@ -109,7 +109,7 @@ fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<
                 .or_else(|_| Image::from_path("icons/32x32.png"))
                 .unwrap_or_else(|_| app.default_window_icon().unwrap().clone())
         )
-        .tooltip("WinScript2 - Ctrl+Shift+J to open")
+        .tooltip("SnapRun - Ctrl+Shift+J to open")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| match event {
@@ -287,7 +287,7 @@ pub fn run() {
             // Show window on first launch
             window.show().unwrap();
             
-            println!("🚀 WinScript2 initialized with system tray and global shortcut (Ctrl+Shift+J)");
+            println!("🚀 SnapRun initialized with system tray and global shortcut (Ctrl+Shift+J)");
 
             Ok(())
         })

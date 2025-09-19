@@ -30,23 +30,23 @@ pub struct ScriptManager {
 impl ScriptManager {
     /// Get the user scripts directory path with environment variable support
     pub fn get_user_scripts_path() -> PathBuf {
-        // Try WINSCRIPT2_SCRIPTS environment variable first
-        if let Ok(scripts_path) = env::var("WINSCRIPT2_SCRIPTS") {
-            println!("🟣 Using WINSCRIPT2_SCRIPTS: {}", scripts_path);
+        // Try SNAPRUN_SCRIPTS environment variable first
+        if let Ok(scripts_path) = env::var("SNAPRUN_SCRIPTS") {
+            println!("🟣 Using SNAPRUN_SCRIPTS: {}", scripts_path);
             return PathBuf::from(scripts_path);
         }
         
-        // Default to Documents/WinScript2/Scripts (user-friendly location)
+        // Default to Documents/SnapRun/Scripts (user-friendly location)
         if let Some(docs_dir) = dirs::document_dir() {
-            let scripts_path = docs_dir.join("WinScript2").join("Scripts");
+            let scripts_path = docs_dir.join("SnapRun").join("Scripts");
             println!("🟣 Using Documents folder: {}", scripts_path.display());
             return scripts_path;
         }
         
-        // Try WINSCRIPT2_HOME environment variable as fallback
-        if let Ok(home_path) = env::var("WINSCRIPT2_HOME") {
+        // Try SNAPRUN_HOME environment variable as fallback
+        if let Ok(home_path) = env::var("SNAPRUN_HOME") {
             let scripts_path = PathBuf::from(home_path).join("Scripts");
-            println!("🟣 Using WINSCRIPT2_HOME: {}", scripts_path.display());
+            println!("🟣 Using SNAPRUN_HOME: {}", scripts_path.display());
             return scripts_path;
         }
         

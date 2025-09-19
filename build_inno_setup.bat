@@ -1,7 +1,7 @@
 @echo off
-REM WinScript2 Inno Setup Build Script
+REM SnapRun Inno Setup Build Script
 echo =====================================================
-echo   WinScript2 Inno Setup Installer Builder
+echo   SnapRun Inno Setup Installer Builder
 echo =====================================================
 
 echo.
@@ -22,7 +22,7 @@ if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" (
     echo ⚠ Inno Setup not found, but all files are prepared!
     echo.
     echo INNO SETUP INSTALLER PACKAGE READY:
-    echo   ✓ WinScript2.iss script created
+    echo   ✓ SnapRun.iss script created
     echo   ✓ Install info files prepared
     echo   ✓ License file ready
     echo   ✓ All source files validated
@@ -31,14 +31,14 @@ if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" (
     echo 1. Download Inno Setup from: https://jrsoftware.org/isdl.php
     echo 2. Install Inno Setup (free)
     echo 3. Run this script again, or
-    echo 4. Open WinScript2.iss in Inno Setup IDE and compile
+    echo 4. Open SnapRun.iss in Inno Setup IDE and compile
     echo.
     echo =====================================================
     echo   Inno Setup Package Prepared Successfully!
     echo =====================================================
     echo.
     echo The complete Inno Setup package includes:
-    echo   - Professional installer script (WinScript2.iss)
+    echo   - Professional installer script (SnapRun.iss)
     echo   - Pre/post install information
     echo   - File associations (.rhai files)
     echo   - Environment variable setup
@@ -77,11 +77,11 @@ echo ✓ Output directory ready
 
 echo.
 echo Building Inno Setup installer...
-echo Script: WinScript2.iss
+echo Script: SnapRun.iss
 echo Compiler: %INNO_PATH%
 
 REM Build the installer
-"%INNO_PATH%" "WinScript2.iss"
+"%INNO_PATH%" "SnapRun.iss"
 
 if %ERRORLEVEL% EQU 0 (
     echo.
@@ -90,12 +90,12 @@ if %ERRORLEVEL% EQU 0 (
     echo =====================================================
     echo.
     echo Output file:
-    dir "src-tauri\target\release\bundle\inno\WinScript2_1.0.0_x64_inno_setup.exe" 2>nul
+    dir "src-tauri\target\release\bundle\inno\SnapRun_1.0.0_x64_inno_setup.exe" 2>nul
     echo.
     echo You now have THREE installer options:
-    echo   1. MSI: WinScript2_1.0.0_x64_en-US.msi (Windows Installer)
-    echo   2. NSIS: WinScript2_1.0.0_x64-setup.exe (Custom installer)
-    echo   3. Inno: WinScript2_1.0.0_x64_inno_setup.exe (Professional installer)
+    echo   1. MSI: SnapRun_1.0.0_x64_en-US.msi (Windows Installer)
+    echo   2. NSIS: SnapRun_1.0.0_x64-setup.exe (Custom installer)
+    echo   3. Inno: SnapRun_1.0.0_x64_inno_setup.exe (Professional installer)
     echo.
     echo All installers provide:
     echo   - System tray integration
@@ -107,7 +107,7 @@ if %ERRORLEVEL% EQU 0 (
     echo ❌ Inno Setup build failed with error code %ERRORLEVEL%
     echo.
     echo Common issues:
-    echo   - Check file paths in WinScript2.iss
+    echo   - Check file paths in SnapRun.iss
     echo   - Ensure all source files exist
     echo   - Verify Inno Setup syntax
     echo.

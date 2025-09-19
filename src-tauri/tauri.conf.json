@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "WinScript2",
-  "version": "1.0.1",
-  "identifier": "com.winscript.winscript2",
+  "productName": "SnapRun",
+  "version": "1.0.0",
+  "identifier": "com.snaprun.snaprun",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "WinScript2 - Rhai Scripting Platform",
+        "title": "SnapRun - Instant Windows Automation",
         "transparent": false,
         "width": 600,
         "height": 600,
@@ -34,7 +34,7 @@
   "bundle": {
     "active": true,
     "targets": ["msi", "nsis"],
-    "publisher": "WinScript2 Team",
+    "publisher": "SnapRun Team",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png", 
@@ -44,9 +44,9 @@
     ],
     "resources": ["../user_scripts/*"],
     "category": "DeveloperTool",
-    "shortDescription": "Windows Automation Scripting Tool",
-    "longDescription": "Advanced Windows automation tool with Rhai scripting, file system operations, process execution, and markdown rendering capabilities.",
-    "copyright": "Copyright © 2024 WinScript2 Team",
+    "shortDescription": "Instant Windows Automation Platform",
+    "longDescription": "Snap your way to Windows automation with powerful Rhai scripting, file system operations, process execution, and intuitive user interface.",
+    "copyright": "Copyright © 2024 SnapRun Team",
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",

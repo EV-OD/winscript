@@ -59,4 +59,4 @@ print(result); // Shows command output without showing the command window
 ```
 
 ## 🚀 **Ready for Production**
-This fix ensures WinScript2 provides a professional, seamless automation experience without disruptive command prompt windows popping up during script execution.
+This fix ensures SnapRun provides a professional, seamless automation experience without disruptive command prompt windows popping up during script execution.

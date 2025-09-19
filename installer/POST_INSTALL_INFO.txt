@@ -1,7 +1,7 @@
-WinScript2 Installation Complete!
+SnapRun Installation Complete!
 
 NEXT STEPS:
-1. Look for the WinScript2 icon in your system tray (notification area)
+1. Look for the SnapRun icon in your system tray (notification area)
 2. Right-click the tray icon to access the context menu
 3. Left-click the tray icon to show/hide the main window
 
@@ -13,8 +13,8 @@ GETTING STARTED:
 
 CONFIGURATION:
 If you selected environment variable setup, the following variables are now available:
-• WINSCRIPT2_HOME: Points to the main installation directory
-• WINSCRIPT2_SCRIPTS: Points to the Scripts directory
+• SnapRun_HOME: Points to the main installation directory
+• SnapRun_SCRIPTS: Points to the Scripts directory
 
 You may need to restart command prompts or log off/on for environment variables to take effect.
 
@@ -29,4 +29,4 @@ SUPPORT:
 • Issues: https://github.com/EV-OD/winscript/issues
 • Project: https://github.com/EV-OD/winscript
 
-Thank you for using WinScript2!
+Thank you for using SnapRun!

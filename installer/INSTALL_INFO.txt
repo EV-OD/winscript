@@ -1,6 +1,6 @@
-Welcome to WinScript2 Setup!
+Welcome to SnapRun Setup!
 
-WinScript2 is a modern Windows automation platform powered by the Rhai scripting engine.
+SnapRun is a modern Windows automation platform powered by the Rhai scripting engine.
 
 FEATURES:
 • System Tray Integration - Runs quietly in the background

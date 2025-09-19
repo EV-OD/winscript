@@ -3,7 +3,7 @@
 ## ✅ **Custom Logo Successfully Implemented**
 
 ### **🎯 What Was Implemented:**
-Your custom logo (`Group 2.svg` and `Group 2.png`) is now used throughout WinScript2:
+Your custom logo (`Group 2.svg` and `Group 2.png`) is now used throughout SnapRun:
 
 ### **📦 Files Updated:**
 
@@ -32,7 +32,7 @@ Your custom logo (`Group 2.svg` and `Group 2.png`) is now used throughout WinScr
 - ✅ **index.html** - Updated favicon and title:
   ```html
   <link rel="icon" type="image/png" href="/favicon.ico" />
-  <title>WinScript2 - Windows Automation Tool</title>
+  <title>SnapRun - Windows Automation Tool</title>
   ```
 - ✅ **public/favicon.ico** - Added 32x32 PNG as favicon
 - ✅ **src/assets/logo.svg** - Replaced with your custom SVG
@@ -91,4 +91,4 @@ All installers (MSI, NSIS) will use your custom logo throughout the installation
 2. **Rebuild installers** - `.\build_production.bat` to update MSI/NSIS packages
 3. **Clear icon cache** - If old icons persist, restart Windows Explorer
 
-Your WinScript2 now has a consistent, professional brand identity with your custom logo! 🎨
+Your SnapRun now has a consistent, professional brand identity with your custom logo! 🎨

@@ -111,4 +111,4 @@ onMount(() => {
 - **User-Friendly** - No need to manually navigate back to script search
 - **Professional UX** - Clean, predictable interface behavior
 
-The implementation ensures every time WinScript2 is opened from the tray or global shortcut, users get a fresh script search page ready for their next automation task!
+The implementation ensures every time SnapRun is opened from the tray or global shortcut, users get a fresh script search page ready for their next automation task!

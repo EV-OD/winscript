@@ -1,7 +1,7 @@
 {
-  "name": "tauri-app",
-  "version": "0.1.0",
-  "description": "",
+  "name": "snaprun",
+  "version": "1.0.0",
+  "description": "Instant Windows Automation with a snap of your fingers",
   "type": "module",
   "scripts": {
     "start": "vite",

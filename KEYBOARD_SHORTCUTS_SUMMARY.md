@@ -1,10 +1,10 @@
-# WinScript2 - Keyboard Shortcuts Implementation Summary
+# SnapRun - Keyboard Shortcuts Implementation Summary
 
 ## ✅ Implementation Complete
 
 ### New Global Shortcuts
-- **Ctrl+Shift+J**: Show WinScript2 window from system tray
-- **Ctrl+W**: Hide WinScript2 window to system tray (does not close the app)
+- **Ctrl+Shift+J**: Show SnapRun window from system tray
+- **Ctrl+W**: Hide SnapRun window to system tray (does not close the app)
 
 ### Technical Implementation
 
@@ -42,7 +42,7 @@ app.global_shortcut().register("CmdOrCtrl+Shift+J")?;
 ```
 
 ### User Experience
-1. **Ctrl+Shift+J**: Instantly shows WinScript2 from anywhere, even when minimized to tray
+1. **Ctrl+Shift+J**: Instantly shows SnapRun from anywhere, even when minimized to tray
 2. **Ctrl+W**: Hides the window but keeps the app running in system tray
 3. **System Tray**: Right-click tray icon for Show/Hide/Quit options
 4. **Window Close Button**: Also hides to tray instead of closing completely
@@ -55,12 +55,12 @@ app.global_shortcut().register("CmdOrCtrl+Shift+J")?;
 
 ### Build Status
 - ✅ Successfully compiled
-- ✅ MSI installer updated: `WinScript2_1.0.0_x64_en-US.msi`
-- ✅ NSIS installer updated: `WinScript2_1.0.0_x64-setup.exe`
+- ✅ MSI installer updated: `SnapRun_1.0.0_x64_en-US.msi`
+- ✅ NSIS installer updated: `SnapRun_1.0.0_x64-setup.exe`
 - ✅ Ready for production deployment
 
 ### Notes
-- The shortcut works system-wide, even when WinScript2 is not in focus
+- The shortcut works system-wide, even when SnapRun is not in focus
 - App properly runs in background with minimal system resource usage
 - All keyboard shortcuts documented in user guides
 

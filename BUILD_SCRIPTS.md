@@ -1,4 +1,4 @@
-# WinScript2 Build Scripts Reference
+# SnapRun Build Scripts Reference
 
 ## 🚀 Quick Commands
 
@@ -56,9 +56,9 @@ pnpm run test:install     # Test installation
 After running release commands, you'll find:
 
 ### **Installers:**
-- **MSI**: `src-tauri/target/release/bundle/msi/WinScript2_1.0.1_x64.msi`
-- **NSIS**: `src-tauri/target/release/bundle/nsis/WinScript2_1.0.1_x64.exe`
-- **Inno Setup**: `src-tauri/target/release/bundle/inno/WinScript2_1.0.1_x64_inno_setup.exe`
+- **MSI**: `src-tauri/target/release/bundle/msi/SnapRun_1.0.1_x64.msi`
+- **NSIS**: `src-tauri/target/release/bundle/nsis/SnapRun_1.0.1_x64.exe`
+- **Inno Setup**: `src-tauri/target/release/bundle/inno/SnapRun_1.0.1_x64_inno_setup.exe`
 
 ### **Executable:**
 - **Standalone**: `src-tauri/target/release/tauri-app.exe`

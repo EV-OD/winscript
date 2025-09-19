@@ -1,6 +1,6 @@
-# WinScript2 - Rhai Scripting Platform
+# SnapRun - Rhai Scripting Platform
 
-**Automate your Windows tasks with ease.** WinScript2 is a user-friendly desktop application that lets you write and run scripts to automate repetitive tasks, manage system operations, and enhance your productivity.
+**Automate your Windows tasks with ease.** SnapRun is a user-friendly desktop application that lets you write and run scripts to automate repetitive tasks, manage system operations, and enhance your productivity.
 
 ## What Can You Do?
 
@@ -11,7 +11,7 @@
 - **System Tasks**: Automate routine maintenance and monitoring
 - **Custom Workflows**: Create personalized automation scripts
 
-### ✨ **Why Choose WinScript2?**
+### ✨ **Why Choose SnapRun?**
 - **Easy to Use**: Clean, intuitive interface - no command line required
 - **Rich Content**: Built-in markdown rendering with glass-styled dark theme
 - **File System Power**: Complete file and directory operations from scripts
@@ -29,7 +29,7 @@
 ## User Guide
 
 ### 📋 **Basic Usage**
-- **Launch the App** - Double-click to open WinScript2
+- **Launch the App** - Double-click to open SnapRun
 - **Browse Scripts** - Use ↑/↓ arrow keys to navigate available scripts
 - **Search Scripts** - Type to filter and find what you need
 - **Run Scripts** - Press Enter to execute any script
@@ -43,8 +43,8 @@
 | `Enter` | Run the selected script |
 | `Q` | Stop script and return to main menu |
 | `Escape` | Clear search |
-| `Ctrl+Shift+J` | Show WinScript2 window from system tray |
-| `Ctrl+W` | Hide WinScript2 window to system tray |
+| `Ctrl+Shift+J` | Show SnapRun window from system tray |
+| `Ctrl+W` | Hide SnapRun window to system tray |
 
 ### 📝 **Rhai Scripting Features**
 
@@ -110,7 +110,7 @@ Scripts are automatically organized into categories:
 
 ### 🔧 **For Developers & Advanced Users**
 
-WinScript2 is built with modern technologies for performance, security, and extensibility.
+SnapRun is built with modern technologies for performance, security, and extensibility.
 
 ### **Technology Stack**
 
@@ -380,4 +380,4 @@ For issues, questions, or contributions, please use the project's issue tracker.
 
 ---
 
-**WinScript2** - Professional Rhai scripting environment with modern desktop UI.
+**SnapRun** - Professional Rhai scripting environment with modern desktop UI.

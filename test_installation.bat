@@ -1,11 +1,11 @@
 @echo off
-REM WinScript2 Test Installation Script
+REM SnapRun Test Installation Script
 echo =====================================================
-echo   WinScript2 Installation Test
+echo   SnapRun Installation Test
 echo =====================================================
 
 echo.
-echo Testing WinScript2 installation...
+echo Testing SnapRun installation...
 
 REM Check if executable exists
 if exist "src-tauri\target\release\tauri-app.exe" (
@@ -15,7 +15,7 @@ if exist "src-tauri\target\release\tauri-app.exe" (
     echo ✓ Executable found in current directory
     set "WINSCRIPT_EXE=tauri-app.exe"
 ) else (
-    echo ❌ WinScript2 executable not found
+    echo ❌ SnapRun executable not found
     echo    Please run build_production.bat first or check if tauri-app.exe exists
     pause
     exit /b 1
@@ -42,7 +42,7 @@ if exist "src-tauri\target\release\bundle\inno\*.exe" (
     echo ✓ Inno Setup installer found
     dir "src-tauri\target\release\bundle\inno\*.exe" /b
 ) else (
-    if exist "WinScript2.iss" (
+    if exist "SnapRun.iss" (
         echo ✓ Inno Setup package ready ^(run build_inno_setup.bat^)
     ) else (
         echo ⚠ Inno Setup package not found
@@ -52,16 +52,16 @@ if exist "src-tauri\target\release\bundle\inno\*.exe" (
 REM Test environment variables
 echo.
 echo Testing environment variables...
-if defined WINSCRIPT2_HOME (
-    echo ✓ WINSCRIPT2_HOME is set: %WINSCRIPT2_HOME%
+if defined SnapRun_HOME (
+    echo ✓ SnapRun_HOME is set: %SnapRun_HOME%
 ) else (
-    echo ⚠ WINSCRIPT2_HOME not set (optional)
+    echo ⚠ SnapRun_HOME not set (optional)
 )
 
-if defined WINSCRIPT2_SCRIPTS (
-    echo ✓ WINSCRIPT2_SCRIPTS is set: %WINSCRIPT2_SCRIPTS%
+if defined SnapRun_SCRIPTS (
+    echo ✓ SnapRun_SCRIPTS is set: %SnapRun_SCRIPTS%
 ) else (
-    echo ⚠ WINSCRIPT2_SCRIPTS not set (optional)  
+    echo ⚠ SnapRun_SCRIPTS not set (optional)  
 )
 
 REM Test script directory
@@ -90,7 +90,7 @@ echo =====================================================
 echo   Installation Test Complete
 echo   
 echo   Quick Start:
-echo   1. Run setup_winscript2.bat for full setup
+echo   1. Run setup_SnapRun.bat for full setup
 echo   2. Or run %WINSCRIPT_EXE% directly
 echo   3. Look for system tray icon
 echo   
@@ -101,7 +101,7 @@ echo   - Inno: Professional package ready (needs Inno Setup)
 echo   
 echo   Files ready for distribution:
 echo   - Executable: %WINSCRIPT_EXE%
-echo   - Setup script: setup_winscript2.bat
+echo   - Setup script: setup_SnapRun.bat
 echo   - Documentation: PRODUCTION_README.md
 echo   - Installer summary: INSTALLER_SUMMARY.md
 echo =====================================================

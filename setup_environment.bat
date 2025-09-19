@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ========================================
-echo WinScript2 User Scripts Environment Setup
+echo SnapRun User Scripts Environment Setup
 echo ========================================
 echo.
 
@@ -21,7 +21,7 @@ echo.
 REM Check if user_scripts directory exists
 if not exist "%USER_SCRIPTS_DIR%" (
     echo ❌ ERROR: user_scripts directory not found at: %USER_SCRIPTS_DIR%
-    echo Please make sure you're running this script from the WinScript2 project root
+    echo Please make sure you're running this script from the SnapRun project root
     goto :error
 )
 
@@ -50,7 +50,7 @@ echo.
 echo ========================================
 echo Usage After Compilation
 echo ========================================
-echo After compiling your WinScript2 app:
+echo After compiling your SnapRun app:
 echo 1. The compiled app will look for WIN_SCRIPT2_PATH environment variable
 echo 2. You can move the user_scripts folder anywhere on your system
 echo 3. Update WIN_SCRIPT2_PATH to point to the new location

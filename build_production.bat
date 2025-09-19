@@ -1,7 +1,7 @@
 @echo off
-REM WinScript2 Production Build Script
+REM SnapRun Production Build Script
 echo =====================================================
-echo   WinScript2 Production Build
+echo   SnapRun Production Build
 echo =====================================================
 
 echo.
@@ -56,8 +56,8 @@ echo   3. Run build_inno_setup.bat for Inno Setup installer
 echo   4. Copy the executable manually (Portable)
 echo   
 echo   Environment Variables (optional):
-echo   WINSCRIPT2_SCRIPTS - Custom scripts directory
-echo   WINSCRIPT2_HOME - WinScript2 home directory
+echo   SNAPRUN_SCRIPTS - Custom scripts directory
+echo   SNAPRUN_HOME - SnapRun home directory
 echo =====================================================
 echo.
 pause
