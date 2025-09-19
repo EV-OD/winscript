@@ -4,6 +4,9 @@ use std::thread;
 use std::sync::mpsc;
 use rhai::{Engine, Dynamic, Map};
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 /// Process execution kit for Rhai scripting
 pub struct ProcessKit;
 
@@ -16,6 +19,16 @@ pub struct ProcessResult {
 }
 
 impl ProcessKit {
+    /// Configure a Command for silent execution (no console window on Windows)
+    fn configure_silent_command(cmd: &mut Command) {
+        #[cfg(target_os = "windows")]
+        {
+            // Use CREATE_NO_WINDOW flag to run processes silently in production
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            cmd.creation_flags(CREATE_NO_WINDOW);
+        }
+    }
+
     /// Register all process-related functions with the Rhai engine
     pub fn register_functions(engine: &mut Engine) {
         // Basic command execution
@@ -127,13 +140,17 @@ impl ProcessKit {
         
         let (cmd, args) = parts.split_first().unwrap();
         
-        match Command::new(cmd)
+        let mut command_builder = Command::new(cmd);
+        command_builder
             .args(args)
             .stdin(Stdio::null())
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-        {
+            .stderr(Stdio::null());
+            
+        // Configure for silent execution on Windows
+        Self::configure_silent_command(&mut command_builder);
+        
+        match command_builder.spawn() {
             Ok(child) => format!("Process spawned with PID: {}", child.id()),
             Err(e) => format!("Failed to spawn process: {}", e)
         }
@@ -156,6 +173,9 @@ impl ProcessKit {
         cmd.args(args);
         cmd.stdout(Stdio::piped());
         cmd.stderr(Stdio::piped());
+        
+        // Configure for silent execution on Windows
+        Self::configure_silent_command(&mut cmd);
         
         let mut child = cmd.spawn()?;
         
