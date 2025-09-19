@@ -1,0 +1,32 @@
+WinScript2 Installation Complete!
+
+NEXT STEPS:
+1. Look for the WinScript2 icon in your system tray (notification area)
+2. Right-click the tray icon to access the context menu
+3. Left-click the tray icon to show/hide the main window
+
+GETTING STARTED:
+• Built-in scripts are located in the installation directory under Scripts\built_in_scripts
+• Create your own scripts in Scripts\custom_scripts
+• Use the script search interface to find and run scripts
+• Scripts have access to file system, process execution, and markdown rendering
+
+CONFIGURATION:
+If you selected environment variable setup, the following variables are now available:
+• WINSCRIPT2_HOME: Points to the main installation directory
+• WINSCRIPT2_SCRIPTS: Points to the Scripts directory
+
+You may need to restart command prompts or log off/on for environment variables to take effect.
+
+SCRIPT DEVELOPMENT:
+• Scripts use the Rhai scripting language
+• Access built-in functions for file operations, process control, and UI interaction
+• See the README.md file in the installation directory for API documentation
+• Example scripts are provided in the built_in_scripts folder
+
+SUPPORT:
+• Documentation: README.md in installation directory
+• Issues: https://github.com/EV-OD/winscript/issues
+• Project: https://github.com/EV-OD/winscript
+
+Thank you for using WinScript2!

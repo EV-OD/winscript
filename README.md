@@ -43,6 +43,8 @@
 | `Enter` | Run the selected script |
 | `Q` | Stop script and return to main menu |
 | `Escape` | Clear search |
+| `Ctrl+Shift+J` | Show WinScript2 window from system tray |
+| `Ctrl+W` | Hide WinScript2 window to system tray |
 
 ### 📝 **Rhai Scripting Features**
 

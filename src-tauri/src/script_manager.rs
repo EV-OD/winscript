@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::env;
 
 /// Information about a Rhai script
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,6 +28,34 @@ pub struct ScriptManager {
 }
 
 impl ScriptManager {
+    /// Get the user scripts directory path with environment variable support
+    pub fn get_user_scripts_path() -> PathBuf {
+        // Try WINSCRIPT2_SCRIPTS environment variable first
+        if let Ok(scripts_path) = env::var("WINSCRIPT2_SCRIPTS") {
+            println!("🟣 Using WINSCRIPT2_SCRIPTS: {}", scripts_path);
+            return PathBuf::from(scripts_path);
+        }
+        
+        // Try WINSCRIPT2_HOME environment variable
+        if let Ok(home_path) = env::var("WINSCRIPT2_HOME") {
+            let scripts_path = PathBuf::from(home_path).join("Scripts");
+            println!("🟣 Using WINSCRIPT2_HOME: {}", scripts_path.display());
+            return scripts_path;
+        }
+        
+        // Fallback to Documents/WinScript2/Scripts
+        if let Some(docs_dir) = dirs::document_dir() {
+            let scripts_path = docs_dir.join("WinScript2").join("Scripts");
+            println!("🟣 Using Documents folder: {}", scripts_path.display());
+            return scripts_path;
+        }
+        
+        // Final fallback to project directory
+        let fallback_path = PathBuf::from("./user_scripts");
+        println!("🟣 Using project fallback: {}", fallback_path.display());
+        fallback_path
+    }
+
     /// Create a new script manager
     pub fn new(project_root: PathBuf) -> Self {
         Self {
@@ -41,19 +70,34 @@ impl ScriptManager {
         
         self.scripts.clear();
         
+        // Get user scripts path (with environment variable support)
+        let user_scripts_path = Self::get_user_scripts_path();
+        
         // Load built-in Rhai scripts
-        let built_in_dir = self.project_root.join("user_scripts").join("built_in_scripts");
+        let built_in_dir = if user_scripts_path.join("built_in_scripts").exists() {
+            user_scripts_path.join("built_in_scripts")
+        } else {
+            // Fallback to project directory
+            self.project_root.join("user_scripts").join("built_in_scripts")
+        };
+        
         if built_in_dir.exists() {
             self.load_scripts_from_directory(&built_in_dir, "Built-in", ScriptType::Rhai)?;
         }
         
         // Load custom Rhai scripts
-        let custom_dir = self.project_root.join("user_scripts").join("custom_scripts");
+        let custom_dir = if user_scripts_path.join("custom_scripts").exists() {
+            user_scripts_path.join("custom_scripts")
+        } else {
+            // Fallback to project directory  
+            self.project_root.join("user_scripts").join("custom_scripts")
+        };
+        
         if custom_dir.exists() {
             self.load_scripts_from_directory(&custom_dir, "Custom", ScriptType::Rhai)?;
         }
         
-        println!("🟣 ScriptManager: Loaded {} scripts", self.scripts.len());
+        println!("🟣 ScriptManager: Loaded {} scripts total from {:?}", self.scripts.len(), user_scripts_path);
         Ok(())
     }
     

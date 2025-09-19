@@ -12,10 +12,16 @@ use scripts::{greeting_script, html_demo_script};
 use rhai_engine::RhaiScriptRunner;
 use script_manager::{ScriptManager, ScriptInfo};
 use tauri::Manager;
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::{TrayIcon, TrayIconBuilder, TrayIconEvent},
+    Runtime,
+};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt};
 
-// Import platform-specific blur functions
-#[cfg(target_os = "windows")]
-use window_vibrancy::{apply_blur, apply_acrylic, apply_mica};
+// Import platform-specific blur functions (currently using CSS-only approach)
+// #[cfg(target_os = "windows")]
+// use window_vibrancy::{apply_blur};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
@@ -46,7 +52,7 @@ fn get_platform() -> String {
 }
 
 // Cross-platform blur setup function
-fn setup_window_blur(window: &tauri::WebviewWindow) -> Result<(), Box<dyn std::error::Error>> {
+fn setup_window_blur(_window: &tauri::WebviewWindow) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "windows")]
     {
         // Disable native Windows blur to use CSS-only glass effects
@@ -76,6 +82,46 @@ fn setup_window_blur(window: &tauri::WebviewWindow) -> Result<(), Box<dyn std::e
     }
 
     Ok(())
+}
+
+// Create system tray
+fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<TrayIcon<R>> {
+    let show_i = MenuItem::with_id(app, "show", "Show WinScript2", true, None::<&str>)?;
+    let hide_i = MenuItem::with_id(app, "hide", "Hide to Tray", true, None::<&str>)?;
+    let quit_i = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&show_i, &hide_i, &quit_i])?;
+
+    TrayIconBuilder::with_id("main-tray")
+        .menu(&menu)
+        .show_menu_on_left_click(false)
+        .on_tray_icon_event(|tray, event| match event {
+            TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, .. } => {
+                let app = tray.app_handle();
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
+            _ => {}
+        })
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "show" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
+            "hide" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.hide();
+                }
+            }
+            "quit" => {
+                std::process::exit(0);
+            }
+            _ => {}
+        })
+        .build(app)
 }
 
 // List all available Rhai scripts
@@ -116,7 +162,7 @@ async fn list_rhai_scripts() -> Result<Vec<ScriptInfo>, String> {
 
 // Execute a Rhai script by its ID
 #[tauri::command]
-async fn run_rhai_script(scriptId: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+async fn run_rhai_script(script_id: String, app_handle: tauri::AppHandle) -> Result<String, String> {
     // Create Kit instance using the app handle
     let kit = Kit::new(app_handle);
     
@@ -152,12 +198,12 @@ async fn run_rhai_script(scriptId: String, app_handle: tauri::AppHandle) -> Resu
     script_manager.load_scripts().map_err(|e| format!("Failed to load scripts: {}", e))?;
     
     let script_info = script_manager.scripts.iter()
-        .find(|s| s.id == scriptId)
-        .ok_or_else(|| format!("Script '{}' not found", scriptId))?;
+        .find(|s| s.id == script_id)
+        .ok_or_else(|| format!("Script '{}' not found", script_id))?;
     
     // Read script content
     let script_content = std::fs::read_to_string(&script_info.file_path)
-        .map_err(|e| format!("Failed to read script '{}': {}", scriptId, e))?;
+        .map_err(|e| format!("Failed to read script '{}': {}", script_id, e))?;
     
     // Create Rhai runner and execute
     let runner = RhaiScriptRunner::new(kit);
@@ -171,6 +217,7 @@ async fn run_rhai_script(scriptId: String, app_handle: tauri::AppHandle) -> Resu
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
             
@@ -179,7 +226,47 @@ pub fn run() {
                 eprintln!("❌ Failed to apply window blur: {}", e);
             }
 
+            // Create system tray
+            let _tray = create_tray(&app.handle())
+                .expect("Failed to create system tray");
+
+            // Register global shortcuts with error handling
+            let app_handle = app.handle().clone();
+            
+            // Try to unregister the shortcut first in case it's already registered
+            let _ = app.global_shortcut().unregister("CmdOrCtrl+Shift+J");
+            
+            // Ctrl+Shift+J to show the window from tray
+            let shortcut_handle = app_handle.clone();
+            let _ = app.global_shortcut().on_shortcut("CmdOrCtrl+Shift+J", move |_app, _shortcut, _event| {
+                if let Some(window) = shortcut_handle.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            });
+            
+            // Register the shortcut with error handling
+            match app.global_shortcut().register("CmdOrCtrl+Shift+J") {
+                Ok(_) => println!("✅ Global shortcut Ctrl+Shift+J registered successfully"),
+                Err(e) => eprintln!("⚠️  Failed to register global shortcut Ctrl+Shift+J: {}", e),
+            }
+
+            // Show window on first launch
+            window.show().unwrap();
+            
+            println!("🚀 WinScript2 initialized with system tray and global shortcut (Ctrl+Shift+J)");
+
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            match event {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    // Prevent the window from closing and hide it instead
+                    window.hide().unwrap();
+                    api.prevent_close();
+                }
+                _ => {}
+            }
         })
         .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform])
         .run(tauri::generate_context!())

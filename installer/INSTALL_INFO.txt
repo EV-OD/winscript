@@ -1,0 +1,29 @@
+Welcome to WinScript2 Setup!
+
+WinScript2 is a modern Windows automation platform powered by the Rhai scripting engine.
+
+FEATURES:
+• System Tray Integration - Runs quietly in the background
+• Glass UI Effects - Modern Windows 10+ styling with transparency
+• Rhai Scripting Engine - Powerful embedded scripting language
+• File System Operations - Complete file and directory management
+• Process Execution - Command spawning and shell integration
+• Markdown Rendering - Live preview of markdown content
+• Environment Variables - Configurable script locations
+
+SYSTEM REQUIREMENTS:
+• Windows 10 version 1809 (build 17763) or later
+• 64-bit architecture (x64)
+• Approximately 15 MB disk space
+• Administrator privileges for installation
+
+INSTALLATION OPTIONS:
+• Desktop shortcut creation
+• Start Menu integration
+• File associations for .rhai files
+• Environment variable setup
+• User document folder configuration
+
+After installation, run the setup wizard to configure your script directories and environment variables for optimal experience.
+
+For more information, visit: https://github.com/EV-OD/winscript
