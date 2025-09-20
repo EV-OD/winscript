@@ -161,6 +161,54 @@ impl UIController {
 
         Ok(())
     }
+
+    /// Show Monaco Editor for editing files
+    pub async fn show_editor(&self, title: &str, editor_data: &str) -> Result<String, String> {
+        let id = Uuid::new_v4().to_string();
+        let (sender, receiver) = oneshot::channel();
+
+        // Store the sender for this request
+        {
+            let mut pending = get_pending_requests().lock().map_err(|e| e.to_string())?;
+            pending.insert(id.clone(), sender);
+        }
+
+        let request = UIRequest {
+            id: id.clone(),
+            r#type: "editor".to_string(),
+            message: title.to_string(),
+            options: None,
+            html_content: Some(editor_data.to_string()),
+        };
+
+        // Emit to frontend
+        self.app_handle
+            .emit("ui_request", &request)
+            .map_err(|e| e.to_string())?;
+
+        // Wait for response (edited content)
+        receiver.await.map_err(|_| "Editor cancelled".to_string())
+    }
+
+    /// Show Monaco Editor without waiting for response (persistent mode)
+    pub fn show_editor_sync(&self, title: &str, editor_data: &str) -> Result<(), String> {
+        let id = Uuid::new_v4().to_string();
+
+        let request = UIRequest {
+            id: id.clone(),
+            r#type: "editor".to_string(),
+            message: title.to_string(),
+            options: None,
+            html_content: Some(editor_data.to_string()),
+        };
+
+        // Emit to frontend without waiting for response
+        self.app_handle
+            .emit("ui_request", &request)
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
 }
 
 // Example usage function

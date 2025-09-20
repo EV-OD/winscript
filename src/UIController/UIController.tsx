@@ -2,10 +2,11 @@ import { createSignal, Component, Show, For, createMemo, createEffect, onMount, 
 import { invoke } from '@tauri-apps/api/core';
 import { UIService } from '../services/UIService';
 import { HtmlRenderer } from '../ThemedComponents';
+import { MonacoEditor } from '../ThemedComponents/index';
 
 export type UIRequest = {
   id: string;
-  type: 'input' | 'select' | 'html' | 'complete';
+  type: 'input' | 'select' | 'html' | 'complete' | 'editor';
   message: string;
   options?: string[];
   html_content?: string;
@@ -35,6 +36,36 @@ export const UIController: Component<UIControllerProps> = (props) => {
       console.error('Failed to detect platform:', error);
     }
   });
+
+  // Handle editor save action
+  const handleEditorSave = async (content: string) => {
+    const request = props.request;
+    if (!request) return;
+
+    // Check if this is a persistent editor (doesn't need to send response)
+    let isPersistent = false;
+    try {
+      const data = JSON.parse(request.html_content || '{}');
+      isPersistent = data.persistent === 'true';
+    } catch {
+      // Not persistent mode if parsing fails
+    }
+
+    if (isPersistent) {
+      console.log('🔵 UIController: Persistent editor save - no response sent to backend');
+      // In persistent mode, we don't send response back
+      // The editor stays open for continued use
+      return;
+    }
+
+    try {
+      console.log('🔵 UIController: Sending editor content back to backend');
+      await UIService.sendResponse(request.id, content);
+      console.log('🔵 UIController: Editor content sent successfully');
+    } catch (error) {
+      console.error('🔴 UIController: Failed to send editor content:', error);
+    }
+  };
 
   // Filter options based on input value - ONLY BY NAME
   const filteredOptions = createMemo(() => {
@@ -395,6 +426,31 @@ export const UIController: Component<UIControllerProps> = (props) => {
             ">
               <HtmlRenderer html={props.request?.html_content || ''} />
             </div>
+          </div>
+        </Show>
+
+        <Show when={props.request?.type === 'editor'}>
+          {/* Monaco Editor - Direct integration without extra wrapper */}
+          <div style="flex: 1; overflow: hidden; padding: 0; min-height: 0; height: 100%;">
+            <MonacoEditor 
+              initialContent={(() => {
+                try {
+                  const data = JSON.parse(props.request?.html_content || '{}');
+                  return data.content || '';
+                } catch {
+                  return props.request?.html_content || '';
+                }
+              })()}
+              filePath={(() => {
+                try {
+                  const data = JSON.parse(props.request?.html_content || '{}');
+                  return data.filePath;
+                } catch {
+                  return undefined;
+                }
+              })()}
+              onSave={(content: string) => handleEditorSave(content)}
+            />
           </div>
         </Show>
       </Show>

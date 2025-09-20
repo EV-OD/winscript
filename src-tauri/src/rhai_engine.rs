@@ -599,6 +599,167 @@ impl RhaiScriptRunner {
             });
         }
         
+        // =============================================================================
+        // MONACO EDITOR FUNCTIONS
+        // =============================================================================
+        
+        // Register editor function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("editor", move |file_path: String| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.editor_sync(Some(file_path))
+            });
+        }
+        
+        // Register editor function without file path (new file)
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("editor", move || -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.editor_sync(None)
+            });
+        }
+        
+        // Register save_file function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("save_file", move |file_path: &str, content: &str| -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.save_file_sync(file_path, content)
+            });
+        }
+        
+        // Register create_temp_file function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("create_temp_file", move |extension: String| -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.create_temp_file_sync(Some(extension))
+            });
+        }
+        
+        // Register create_temp_file function without extension
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("create_temp_file", move || -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.create_temp_file_sync(None)
+            });
+        }
+        
+        // Register create_temp_file_with_content function  
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("create_temp_file_with_content", move |content: &str, extension: String| -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.create_temp_file_with_content_sync(content, Some(extension))
+            });
+        }
+        
+        // Register create_temp_file_with_content function without extension
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("create_temp_file_with_content", move |content: &str| -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.create_temp_file_with_content_sync(content, None)
+            });
+        }
+        
+        // Register open_temp_file function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file", move |extension: String| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_sync(Some(extension))
+            });
+        }
+        
+        // Register open_temp_file function without extension
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file", move || -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_sync(None)
+            });
+        }
+        
+        // Register open_temp_file_with_content function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file_with_content", move |content: &str, extension: String| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_with_content_sync(content, Some(extension))
+            });
+        }
+        
+        // Register open_temp_file_with_content function without extension
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file_with_content", move |content: &str| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_with_content_sync(content, None)
+            });
+        }
+        
+        // =============================================================================
+        // PERSISTENT MONACO EDITOR FUNCTIONS (NO RETURN VALUE, EDITOR STAYS OPEN)
+        // =============================================================================
+        
+        // Register editor_persistent function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("editor_persistent", move |file_path: String| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.editor_persistent_sync(Some(file_path))
+            });
+        }
+        
+        // Register editor_persistent function without file path (new file)
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("editor_persistent", move || -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.editor_persistent_sync(None)
+            });
+        }
+        
+        // Register open_temp_file_persistent function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file_persistent", move |extension: String| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_persistent_sync(Some(extension))
+            });
+        }
+        
+        // Register open_temp_file_persistent function without extension
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file_persistent", move || -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_persistent_sync(None)
+            });
+        }
+        
+        // Register open_temp_file_with_content_persistent function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file_with_content_persistent", move |content: &str, extension: String| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_with_content_persistent_sync(content, Some(extension))
+            });
+        }
+        
+        // Register open_temp_file_with_content_persistent function without extension
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("open_temp_file_with_content_persistent", move |content: &str| -> String {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.open_temp_file_with_content_persistent_sync(content, None)
+            });
+        }
+        
         println!("🟣 RhaiScriptRunner: All Kit functions registered");
     }
     
