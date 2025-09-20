@@ -5,12 +5,14 @@ mod rhai_engine;
 mod script_manager;
 mod fs_kit;
 mod process_kit;
+mod logging;
 
 use ui_controller::{ui_response, demo_ui_controller};
 use kits::{demo_kit_usage, ui_kit::Kit};
 use scripts::{greeting_script, html_demo_script};
 use rhai_engine::RhaiScriptRunner;
 use script_manager::{ScriptManager, ScriptInfo};
+use logging::{LogLevel, LogSource, get_logger};
 use tauri::Manager;
 use tauri::{
     menu::{Menu, MenuItem},
@@ -235,9 +237,40 @@ async fn run_rhai_script(script_id: String, app_handle: tauri::AppHandle) -> Res
     
     // Create Rhai runner and execute
     let runner = RhaiScriptRunner::new(kit);
-    match runner.run_script(&script_content) {
+    match runner.run_script_with_name(&script_content, &script_info.name) {
         Ok(_) => Ok(format!("Script '{}' executed successfully", script_info.name)),
         Err(e) => Err(format!("Script execution failed: {}", e))
+    }
+}
+
+// Logging commands for frontend to send logs to Rust logging system
+#[tauri::command]
+async fn log_frontend_message(level: String, component: String, message: String, script_context: Option<String>) -> Result<(), String> {
+    let log_level = match level.as_str() {
+        "info" => LogLevel::Info,
+        "warn" => LogLevel::Warn,
+        "error" => LogLevel::Error,
+        "debug" => LogLevel::Debug,
+        "trace" => LogLevel::Trace,
+        _ => LogLevel::Info,
+    };
+
+    let source = LogSource::Frontend(component);
+
+    if let Some(logger) = get_logger() {
+        logger.log(log_level, source, &message, script_context);
+        Ok(())
+    } else {
+        Err("Logger not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+async fn get_logs_directory() -> Result<String, String> {
+    if let Some(logger) = get_logger() {
+        Ok(logger.get_logs_directory_path().to_string_lossy().to_string())
+    } else {
+        Err("Logger not initialized".to_string())
     }
 }
 
@@ -247,6 +280,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .setup(|app| {
+            // Initialize logging system first
+            if let Err(e) = logging::init_logger() {
+                eprintln!("❌ Failed to initialize logging system: {}", e);
+            }
+            
             let window = app.get_webview_window("main").unwrap();
             
             // Apply blur effects
@@ -301,7 +339,7 @@ pub fn run() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform, reset_ui_state])
+        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform, reset_ui_state, log_frontend_message, get_logs_directory])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

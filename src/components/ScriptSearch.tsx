@@ -1,6 +1,7 @@
 import { Component, createSignal, For, onMount, Show, onCleanup, createEffect } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { UIService, ScriptInfo } from '../services/UIService';
+import { scriptSearchLogger } from '../services/LoggingService';
 
 type ScriptSearchProps = {
   onScriptSelect: (script: string) => void;
@@ -25,18 +26,18 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
       try {
         const platformName = await invoke('get_platform');
         setPlatform(platformName as string);
-        console.log('🔍 Platform detected:', platformName);
+        scriptSearchLogger.debug(`Platform detected: ${platformName}`);
       } catch (error) {
-        console.error('Failed to detect platform:', error);
+        scriptSearchLogger.error(`Failed to detect platform: ${error}`);
       }
       
       // Load scripts
       const scripts = await UIService.listRhaiScripts();
       setRhaiScripts(scripts);
       setScriptsLoaded(true);
-      console.log('📜 ScriptSearch: Loaded Rhai scripts:', scripts);
+      scriptSearchLogger.info(`Loaded ${scripts.length} Rhai scripts`);
     } catch (error) {
-      console.error('📜 ScriptSearch: Failed to load Rhai scripts:', error);
+      scriptSearchLogger.error(`Failed to load Rhai scripts: ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -139,15 +140,15 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
   const handleScriptSelect = async (script: ScriptInfo) => {
     setIsLoading(true);
     try {
-      console.log('📜 ScriptSearch: Executing Rhai script:', script.name);
+      await scriptSearchLogger.scriptStart(script.name);
       
       const result = await invoke('run_rhai_script', { scriptId: script.id });
-      console.log('📜 ScriptSearch: Script executed successfully:', result);
+      await scriptSearchLogger.scriptSuccess(script.name, result);
       
       // Notify parent to switch to UIController
       props.onScriptSelect(script.name);
     } catch (error) {
-      console.error('📜 ScriptSearch: Script execution failed:', error);
+      await scriptSearchLogger.scriptError(script.name, error);
     } finally {
       setIsLoading(false);
       maintainFocus(); // Return focus after script execution

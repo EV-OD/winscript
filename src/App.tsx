@@ -4,6 +4,7 @@ import { UIController } from "./UIController";
 import { ScriptSearch } from "./components";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useUIEvents } from "./hooks/useUIEvents";
+import { appLogger } from "./services/LoggingService";
 import type { UIRequest } from "./UIController";
 import { listen } from '@tauri-apps/api/event';
 
@@ -59,14 +60,14 @@ const App: Component = () => {
   };
 
   const handleScriptSelect = (script: string) => {
-    console.log('🔵 App: Selected script:', script);
-    console.log('🔵 App: Setting showUIController to true');
+    appLogger.info(`Selected script: ${script}`);
+    appLogger.debug('Setting showUIController to true');
     setShowUIController(true);
   };
 
   // Set up global script completion handler
   window.onScriptComplete = () => {
-    console.log('🔵 App: Script completed, closing UIController');
+    appLogger.info('Script completed, closing UIController');
     setShowUIController(false);
     clearRequest();
   };
