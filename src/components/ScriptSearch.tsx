@@ -198,7 +198,7 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
             data-gramm_editor="false"
             data-enable-grammarly="false"
             style="
-              width: 100%; 
+              flex: 1; 
               height: 50px; 
               background: #403c4a; 
               color: #cccccc; 
@@ -206,8 +206,33 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
               font-size: 20px;
               border-radius: 0px!important;
               outline: none;
+              border: none;
             "
           />
+          {/* Draggable area on the right */}
+          <div 
+            data-tauri-drag-region
+            style="
+              width: 40px;
+              height: 50px;
+              background: rgba(255, 255, 255, 0.03);
+              border-left: 1px solid rgba(255, 255, 255, 0.08);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: grab;
+              transition: all 0.2s ease;
+              font-size: 12px;
+              color: rgba(255, 255, 255, 0.3);
+              opacity: 0.6;
+            "
+            onMouseDown={(e) => e.currentTarget.style.cursor = 'grabbing'}
+            onMouseUp={(e) => e.currentTarget.style.cursor = 'grab'}
+            onMouseLeave={(e) => e.currentTarget.style.cursor = 'grab'}
+            title="Drag to move window"
+          >
+            ⋮⋮
+          </div>
           <Show when={isLoading()}>
             <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #007acc;">
               Loading...
