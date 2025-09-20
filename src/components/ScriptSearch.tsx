@@ -313,7 +313,7 @@ export const ScriptSearch: Component<ScriptSearchProps> = (props) => {
         color: #858585;
       ">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>Rhai Script Runner • Enhanced with frosted glass effects</div>
+          <div>SnapRun made by Rabin</div>
           <div>{filteredScripts().length} scripts</div>
         </div>
       </div>

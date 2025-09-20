@@ -711,6 +711,92 @@ impl Kit {
             })
         })
     }
+
+    /// Parse JSON string to Rhai map/array
+    pub fn parse_json(&self, json_str: &str) -> Result<rhai::Dynamic, String> {
+        serde_json::from_str::<serde_json::Value>(json_str)
+            .map_err(|e| format!("JSON parse error: {}", e))
+            .and_then(|v| self.json_value_to_rhai(v))
+    }
+
+    /// Convert Rhai data to JSON string
+    pub fn to_json(&self, data: rhai::Dynamic) -> Result<String, String> {
+        let json_value = self.rhai_to_json_value(data)?;
+        serde_json::to_string_pretty(&json_value)
+            .map_err(|e| format!("JSON serialization error: {}", e))
+    }
+
+    /// Get current timestamp
+    pub fn timestamp(&self) -> i64 {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as i64
+    }
+
+    /// Helper to convert JSON Value to Rhai Dynamic
+    fn json_value_to_rhai(&self, value: serde_json::Value) -> Result<rhai::Dynamic, String> {
+        match value {
+            serde_json::Value::Null => Ok(rhai::Dynamic::UNIT),
+            serde_json::Value::Bool(b) => Ok(rhai::Dynamic::from(b)),
+            serde_json::Value::Number(n) => {
+                if let Some(i) = n.as_i64() {
+                    Ok(rhai::Dynamic::from(i))
+                } else if let Some(f) = n.as_f64() {
+                    Ok(rhai::Dynamic::from(f))
+                } else {
+                    Ok(rhai::Dynamic::from(n.to_string()))
+                }
+            },
+            serde_json::Value::String(s) => Ok(rhai::Dynamic::from(s)),
+            serde_json::Value::Array(arr) => {
+                let mut rhai_arr = rhai::Array::new();
+                for item in arr {
+                    rhai_arr.push(self.json_value_to_rhai(item)?);
+                }
+                Ok(rhai::Dynamic::from(rhai_arr))
+            },
+            serde_json::Value::Object(obj) => {
+                let mut rhai_map = rhai::Map::new();
+                for (k, v) in obj {
+                    rhai_map.insert(k.into(), self.json_value_to_rhai(v)?);
+                }
+                Ok(rhai::Dynamic::from(rhai_map))
+            }
+        }
+    }
+
+    /// Helper to convert Rhai Dynamic to JSON Value
+    fn rhai_to_json_value(&self, data: rhai::Dynamic) -> Result<serde_json::Value, String> {
+        if data.is::<()>() {
+            Ok(serde_json::Value::Null)
+        } else if let Some(b) = data.clone().try_cast::<bool>() {
+            Ok(serde_json::Value::Bool(b))
+        } else if let Some(i) = data.clone().try_cast::<i64>() {
+            Ok(serde_json::Value::Number(serde_json::Number::from(i)))
+        } else if let Some(f) = data.clone().try_cast::<f64>() {
+            serde_json::Number::from_f64(f)
+                .map(serde_json::Value::Number)
+                .ok_or_else(|| "Invalid float number".to_string())
+        } else if let Some(s) = data.clone().try_cast::<String>() {
+            Ok(serde_json::Value::String(s))
+        } else if let Some(arr) = data.clone().try_cast::<rhai::Array>() {
+            let mut json_arr = Vec::new();
+            for item in arr {
+                json_arr.push(self.rhai_to_json_value(item)?);
+            }
+            Ok(serde_json::Value::Array(json_arr))
+        } else if let Some(map) = data.clone().try_cast::<rhai::Map>() {
+            let mut json_obj = serde_json::Map::new();
+            for (k, v) in map {
+                json_obj.insert(k.to_string(), self.rhai_to_json_value(v)?);
+            }
+            Ok(serde_json::Value::Object(json_obj))
+        } else {
+            // Fallback: convert to string
+            Ok(serde_json::Value::String(format!("{}", data)))
+        }
+    }
 }
 
 /// Convenience function to create a new Kit instance

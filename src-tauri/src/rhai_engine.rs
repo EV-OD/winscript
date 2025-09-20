@@ -155,6 +155,19 @@ impl RhaiScriptRunner {
             });
         }
 
+        // Register info function for logging/debugging
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("info", move |message: &str| {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.info_script(LogSource::Rhai(script_name.clone()), message, &script_name);
+                } else {
+                    println!("ℹ️ 📜 {}: {}", script_name, message);
+                }
+            });
+        }
+
         // Register log function (alias for print)
         {
             let script_name_clone = script_name.clone();
@@ -181,6 +194,23 @@ impl RhaiScriptRunner {
                 }
             });
         }
+        
+        // Register format function for string formatting
+        engine.register_fn("format", |template: &str, value: i64| -> String {
+            template.replace("{}", &value.to_string())
+        });
+        
+        engine.register_fn("format", |template: &str, value: f64| -> String {
+            template.replace("{}", &value.to_string())
+        });
+        
+        engine.register_fn("format", |template: &str, value: &str| -> String {
+            template.replace("{}", value)
+        });
+        
+        engine.register_fn("format", |template: &str, value: bool| -> String {
+            template.replace("{}", &value.to_string())
+        });
     }
 
     /// Register advanced mathematical functions with the Rhai engine
@@ -545,6 +575,22 @@ impl RhaiScriptRunner {
             });
         }
 
+        // Register render_html function with title parameter
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("render_html", move |title: &str, html_content: &str| -> bool {
+                let mut kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                // Use the Kit's render_html method directly with title
+                match kit_guard.render_html(title, html_content) {
+                    Ok(_) => true,
+                    Err(e) => {
+                        eprintln!("Error in render_html: {}", e);
+                        false
+                    }
+                }
+            });
+        }
+
         // Register render_markdown function
         {
             let kit_clone = kit.clone();
@@ -772,6 +818,44 @@ impl RhaiScriptRunner {
                 kit_guard.open_temp_file_with_content_persistent_sync(content, None)
             });
         }
+
+        // Register JSON functions
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("parse_json", move |json_str: &str| -> rhai::Dynamic {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                match kit_guard.parse_json(json_str) {
+                    Ok(data) => data,
+                    Err(e) => {
+                        eprintln!("JSON parse error: {}", e);
+                        rhai::Dynamic::UNIT
+                    }
+                }
+            });
+        }
+
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("to_json", move |data: rhai::Dynamic| -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                match kit_guard.to_json(data) {
+                    Ok(json_str) => json_str,
+                    Err(e) => {
+                        eprintln!("JSON serialization error: {}", e);
+                        "{}".to_string()
+                    }
+                }
+            });
+        }
+
+        // Register timestamp function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("timestamp", move || -> i64 {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.timestamp()
+            });
+        }
         
         println!("🟣 RhaiScriptRunner: All Kit functions registered");
     }
@@ -837,6 +921,150 @@ impl RhaiScriptRunner {
             
         self.run_script_with_name(&script_content, script_name)
             .map_err(|e| format!("Script execution error: {}", e))
+    }
+    
+    /// Test all built-in scripts for function availability and basic syntax
+    pub fn test_all_scripts(&self) -> Vec<(String, Result<(), String>)> {
+        let mut results = Vec::new();
+        
+        // Define scripts to test (relative to user_scripts/built_in_scripts/)
+        let test_scripts = vec![
+            "welcome.rhai",
+            "eval.rhai", 
+            "showlog.rhai",
+            "create-script.rhai",
+            "addTodo.rhai",
+            "showTodo.rhai",
+            "removeTodo.rhai"
+        ];
+        
+        for script_name in test_scripts {
+            let script_path = PathBuf::from("user_scripts/built_in_scripts").join(script_name);
+            
+            // Check if file exists
+            if !script_path.exists() {
+                results.push((script_name.to_string(), Err("Script file not found".to_string())));
+                continue;
+            }
+            
+            // Read script content
+            let script_content = match std::fs::read_to_string(&script_path) {
+                Ok(content) => content,
+                Err(e) => {
+                    results.push((script_name.to_string(), Err(format!("Failed to read file: {}", e))));
+                    continue;
+                }
+            };
+            
+            // Test script compilation and basic function availability
+            let test_result = self.test_script_functions(&script_content, script_name);
+            results.push((script_name.to_string(), test_result));
+        }
+        
+        results
+    }
+    
+    /// Test a single script for function availability without executing interactive parts
+    fn test_script_functions(&self, script_content: &str, script_name: &str) -> Result<(), String> {
+        // Create a test scope
+        let mut scope = Scope::new();
+        
+        // First, try to compile the script to check syntax
+        match self.engine.compile(script_content) {
+            Ok(_) => {
+                println!("✅ {}: Compilation successful", script_name);
+            }
+            Err(e) => {
+                return Err(format!("Compilation failed: {} at line {}, position {}", 
+                    e, 
+                    e.position().line().unwrap_or(0),
+                    e.position().position().unwrap_or(0)
+                ));
+            }
+        }
+        
+        // Test individual functions by creating a minimal test script
+        let test_functions = vec![
+            "info", "render_html", "ask_input", "ask_select", 
+            "read_file", "write_file", "file_exists", "create_directory",
+            "get_home_dir", "parse_json", "to_json", "timestamp",
+            "editor", "exit_and_hide"
+        ];
+        
+        for func_name in test_functions {
+            let test_script = match func_name {
+                "info" => "info(\"test\");",
+                "render_html" => "render_html(\"Test\", \"<div>Test</div>\");", 
+                "ask_input" => "// ask_input(\"test\");", // Comment out interactive functions
+                "ask_select" => "// ask_select(\"test\", [\"option1\"]);", // Comment out interactive functions
+                "read_file" => "// read_file(\"test.txt\");", // Comment out file operations that might fail
+                "write_file" => "// write_file(\"test.txt\", \"content\");", // Comment out file operations
+                "file_exists" => "file_exists(\"test.txt\");",
+                "create_directory" => "// create_directory(\"test_dir\");", // Comment out directory creation
+                "get_home_dir" => "get_home_dir();",
+                "parse_json" => "parse_json(\"{}\");",
+                "to_json" => "to_json(#{});",
+                "timestamp" => "timestamp();",
+                "editor" => "// editor(\"test.txt\", \"content\");", // Comment out editor calls
+                "exit_and_hide" => "// exit_and_hide();", // Comment out exit calls
+                _ => continue,
+            };
+            
+            // Skip commented functions (they're interactive or potentially disruptive)
+            if test_script.starts_with("//") {
+                continue;
+            }
+            
+            match self.engine.eval_with_scope::<()>(&mut scope, test_script) {
+                Ok(_) => {
+                    println!("✅ {}: Function '{}' available", script_name, func_name);
+                }
+                Err(e) => {
+                    if e.to_string().contains("Function not found") {
+                        return Err(format!("Missing function: {}", func_name));
+                    }
+                    // Other errors might be OK (like file not found, etc.)
+                    println!("⚠️ {}: Function '{}' exists but test failed: {}", script_name, func_name, e);
+                }
+            }
+        }
+        
+        Ok(())
+    }
+    
+    /// Print a comprehensive test report
+    pub fn print_test_report(&self) {
+        println!("\n🧪 SnapRun Script Test Report");
+        println!("================================");
+        
+        let results = self.test_all_scripts();
+        let mut passed = 0;
+        let mut failed = 0;
+        
+        for (script_name, result) in results {
+            match result {
+                Ok(_) => {
+                    println!("✅ {} - PASSED", script_name);
+                    passed += 1;
+                }
+                Err(error) => {
+                    println!("❌ {} - FAILED: {}", script_name, error);
+                    failed += 1;
+                }
+            }
+        }
+        
+        println!("\n📊 Test Summary:");
+        println!("   Passed: {}", passed);
+        println!("   Failed: {}", failed);
+        println!("   Total:  {}", passed + failed);
+        
+        if failed == 0 {
+            println!("🎉 All tests passed!");
+        } else {
+            println!("⚠️ {} test(s) failed. Check the errors above.", failed);
+        }
+        println!("================================\n");
     }
 }
 

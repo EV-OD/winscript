@@ -45,6 +45,12 @@ impl FileSystemKit {
         engine.register_fn("temp_dir", Self::temp_dir);
         engine.register_fn("current_dir", Self::current_dir);
 
+        // Aliases for compatibility with existing scripts
+        engine.register_fn("read_text_file", Self::read_file);  // Alias for read_file
+        engine.register_fn("write_text_file", Self::write_file); // Alias for write_file
+        engine.register_fn("create_directory", Self::create_dir_all); // Alias for create_dir_all
+        engine.register_fn("get_home_dir", Self::home_dir); // Alias for home_dir
+
         println!("🟣 FileSystemKit: All file system functions registered");
     }
 

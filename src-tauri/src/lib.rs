@@ -274,6 +274,51 @@ async fn get_logs_directory() -> Result<String, String> {
     }
 }
 
+#[tauri::command]
+async fn test_all_scripts(app_handle: tauri::AppHandle) -> Result<String, String> {
+    println!("🧪 Running script tests...");
+    
+    // Create a Kit instance for testing
+    let kit = Kit::new(app_handle);
+    
+    // Create Rhai engine with Kit integration
+    let runner = RhaiScriptRunner::new(kit);
+    
+    // Run the test report
+    runner.print_test_report();
+    
+    // Return the test results as a formatted string
+    let results = runner.test_all_scripts();
+    let mut report = String::new();
+    report.push_str("SnapRun Script Test Report\n");
+    report.push_str("================================\n");
+    
+    let mut passed = 0;
+    let mut failed = 0;
+    
+    for (script_name, result) in results {
+        match result {
+            Ok(_) => {
+                report.push_str(&format!("✅ {} - PASSED\n", script_name));
+                passed += 1;
+            }
+            Err(error) => {
+                report.push_str(&format!("❌ {} - FAILED: {}\n", script_name, error));
+                failed += 1;
+            }
+        }
+    }
+    
+    report.push_str(&format!("\nTest Summary: {} passed, {} failed\n", passed, failed));
+    
+    if failed == 0 {
+        report.push_str("🎉 All tests passed!\n");
+        Ok(report)
+    } else {
+        Err(report)
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -339,7 +384,7 @@ pub fn run() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform, reset_ui_state, log_frontend_message, get_logs_directory])
+        .invoke_handler(tauri::generate_handler![greet, ui_response, demo_ui_controller, demo_kit_usage, greeting_script, html_demo_script, list_rhai_scripts, run_rhai_script, get_platform, reset_ui_state, log_frontend_message, get_logs_directory, test_all_scripts])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -526,7 +526,7 @@ export const UIController: Component<UIControllerProps> = (props) => {
         color: #858585;
       ">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>UI Controller • Enhanced with frosted glass effects</div>
+          <div>SnapRun made by Rabin</div>
           <Show when={props.request?.type === 'select'}>
             <div>{filteredOptions().length} options</div>
           </Show>
