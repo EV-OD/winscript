@@ -56,6 +56,11 @@ impl UIController {
         }
     }
 
+    /// Get a reference to the app handle for direct window operations
+    pub fn get_app_handle(&self) -> &tauri::AppHandle {
+        &self.app_handle
+    }
+
     pub async fn ask_input(&self, message: &str) -> Result<String, String> {
         println!("🟣 UIController: ask_input called with message: {}", message);
         let id = Uuid::new_v4().to_string();
@@ -208,6 +213,27 @@ impl UIController {
             .map_err(|e| e.to_string())?;
 
         Ok(())
+    }
+
+    /// Hide the main app window
+    pub async fn hide_window(&self) -> Result<(), String> {
+        self.app_handle
+            .emit("app_control", serde_json::json!({"action": "hide"}))
+            .map_err(|e| format!("Failed to emit hide window event: {}", e))
+    }
+
+    /// Minimize app to system tray
+    pub async fn minimize_to_tray(&self) -> Result<(), String> {
+        self.app_handle
+            .emit("app_control", serde_json::json!({"action": "minimize"}))
+            .map_err(|e| format!("Failed to emit minimize to tray event: {}", e))
+    }
+
+    /// Close the app window
+    pub async fn close_window(&self) -> Result<(), String> {
+        self.app_handle
+            .emit("app_control", serde_json::json!({"action": "close"}))
+            .map_err(|e| format!("Failed to emit close window event: {}", e))
     }
 }
 

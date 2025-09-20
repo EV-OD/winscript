@@ -36,7 +36,38 @@ const App: Component = () => {
       onCleanup(unlisten);
     };
     
+    const setupAppControlListener = async () => {
+      const unlisten = await listen('app_control', (event) => {
+        const payload = event.payload as { action: string };
+        console.log('🔄 App: Received app_control event:', payload);
+        
+        switch (payload.action) {
+          case 'hide':
+            console.log('🔄 App: Hiding app window');
+            import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+              getCurrentWindow().hide();
+            });
+            break;
+          case 'minimize':
+            console.log('🔄 App: Minimizing to tray');
+            import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+              getCurrentWindow().hide();
+            });
+            break;
+          case 'close':
+            console.log('🔄 App: Closing app window');
+            import('@tauri-apps/api/window').then(({ getCurrentWindow }) => {
+              getCurrentWindow().close();
+            });
+            break;
+        }
+      });
+      
+      onCleanup(unlisten);
+    };
+    
     setupResetListener();
+    setupAppControlListener();
   });
 
   // Automatically show UIController when a request is received

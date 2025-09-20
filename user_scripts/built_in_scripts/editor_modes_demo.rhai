@@ -62,3 +62,19 @@ print("Hello, " + name + "!");
 }
 
 print("🎭 Editor modes demo finished!");
+
+print("");
+print("🚪 Exit Options:");
+print("Press 'q' key to return to script search, or:");
+print("Press Enter to hide app to system tray");
+
+let exit_choice = ask_input("Press Enter to hide app, or type anything to stay:");
+
+if exit_choice == "" {
+    print("🫥 Hiding app to system tray...");
+    print("Use Ctrl+Shift+J to bring it back");
+    let result = exit_and_hide();
+    print("Result: " + result);
+} else {
+    print("✅ Script completed - press 'q' to return to script search");
+}

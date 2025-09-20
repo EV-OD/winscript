@@ -1,5 +1,5 @@
 use crate::ui_controller::UIController;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 /// Simple kit for easy user interaction in Rust scripts
 pub struct Kit {
@@ -81,6 +81,20 @@ impl Kit {
             .emit_event("ui_request", &exit_request)?;
         
         Ok(())
+    }
+
+    /// Exit script and hide app window (keeps in system tray)
+    pub async fn exit_and_hide(&self) -> Result<(), String> {
+        println!("🟣 Kit: exit_and_hide called - hiding main window");
+        
+        // Get the main window and hide it directly
+        let app_handle = self.ui_controller.get_app_handle();
+        if let Some(window) = app_handle.get_webview_window("main") {
+            window.hide().map_err(|e| format!("Failed to hide window: {}", e))?;
+            Ok(())
+        } else {
+            Err("Main window not found".to_string())
+        }
     }
 
     /// Ask user for confirmation (Yes/No)
@@ -662,6 +676,40 @@ impl Kit {
                 format!("Error: {}", e)
             }
         }
+    }
+
+    // =============================================================================
+    // EXIT CONTROL SYNC WRAPPERS FOR RHAI INTEGRATION
+    // =============================================================================
+
+    /// Sync wrapper for exit - for use in Rhai scripts
+    pub fn exit_sync(&self) -> String {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match self.exit().await {
+                    Ok(_) => "Script exited".to_string(),
+                    Err(e) => {
+                        eprintln!("Error in exit_sync: {}", e);
+                        format!("Error: {}", e)
+                    }
+                }
+            })
+        })
+    }
+
+    /// Sync wrapper for exit_and_hide - for use in Rhai scripts
+    pub fn exit_and_hide_sync(&self) -> String {
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match self.exit_and_hide().await {
+                    Ok(_) => "Script exited - app hidden".to_string(),
+                    Err(e) => {
+                        eprintln!("Error in exit_and_hide_sync: {}", e);
+                        format!("Error: {}", e)
+                    }
+                }
+            })
+        })
     }
 }
 

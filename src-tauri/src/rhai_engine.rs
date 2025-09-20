@@ -600,6 +600,19 @@ impl RhaiScriptRunner {
         }
         
         // =============================================================================
+        // EXIT/APP CONTROL FUNCTIONS
+        // =============================================================================
+        
+        // Register exit_and_hide function
+        {
+            let kit_clone = kit.clone();
+            engine.register_fn("exit_and_hide", move || -> String {
+                let kit_guard = kit_clone.lock().expect("Failed to lock Kit");
+                kit_guard.exit_and_hide_sync()
+            });
+        }
+        
+        // =============================================================================
         // MONACO EDITOR FUNCTIONS
         // =============================================================================
         
