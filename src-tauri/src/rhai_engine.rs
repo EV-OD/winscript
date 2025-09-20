@@ -9,6 +9,7 @@ use std::sync::{Arc, Mutex};
 /// Rhai script runner that handles script execution and Kit integration
 pub struct RhaiScriptRunner {
     engine: Engine,
+    current_script_name: Arc<Mutex<String>>,
 }
 
 impl RhaiScriptRunner {
@@ -34,9 +35,16 @@ impl RhaiScriptRunner {
         // Register advanced mathematical functions
         Self::register_math_functions(&mut engine);
         
+        // Register logging and console functions
+        let script_name_shared = Arc::new(Mutex::new("unknown_script".to_string()));
+        Self::register_logging_functions(&mut engine, script_name_shared.clone());
+        
         println!("🟣 RhaiScriptRunner: Engine initialized with Kit integration, FileSystem, Process execution, and Advanced Mathematics");
         
-        Self { engine }
+        Self { 
+            engine,
+            current_script_name: script_name_shared,
+        }
     }
     
     /// Create a basic Rhai runner without Kit integration (for testing)
@@ -53,11 +61,128 @@ impl RhaiScriptRunner {
         // Register advanced mathematical functions even in basic mode
         Self::register_math_functions(&mut engine);
         
+        // Register logging and console functions
+        let script_name_shared = Arc::new(Mutex::new("unknown_script".to_string()));
+        Self::register_logging_functions(&mut engine, script_name_shared.clone());
+        
         println!("🟣 RhaiScriptRunner: Basic engine initialized with FileSystem, Process execution, and Advanced Mathematics (no Kit)");
         
-        Self { engine }
+        Self { 
+            engine,
+            current_script_name: script_name_shared,
+        }
     }
     
+    /// Register logging and console functions with the Rhai engine
+    fn register_logging_functions(engine: &mut Engine, script_name: Arc<Mutex<String>>) {
+        // Register print function that logs to our logging system
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("print", move |message: &str| -> String {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.info_script(LogSource::Rhai(script_name.clone()), message, &script_name);
+                } else {
+                    println!("📜 {}: {}", script_name, message);
+                }
+                message.to_string() // Return the message
+            });
+        }
+
+        // Register println function (alias for print with newline)
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("println", move |message: &str| -> String {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.info_script(LogSource::Rhai(script_name.clone()), message, &script_name);
+                } else {
+                    println!("📜 {}: {}", script_name, message);
+                }
+                message.to_string() // Return the message
+            });
+        }
+
+        // Register console.log
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("console_log", move |message: &str| {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.info_script(LogSource::Rhai(script_name.clone()), &format!("[console.log] {}", message), &script_name);
+                } else {
+                    println!("📜 {} [console.log]: {}", script_name, message);
+                }
+            });
+        }
+
+        // Register console.warn
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("console_warn", move |message: &str| {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.warn_script(LogSource::Rhai(script_name.clone()), &format!("[console.warn] {}", message), &script_name);
+                } else {
+                    println!("⚠️ 📜 {} [console.warn]: {}", script_name, message);
+                }
+            });
+        }
+
+        // Register console.error
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("console_error", move |message: &str| {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.error_script(LogSource::Rhai(script_name.clone()), &format!("[console.error] {}", message), &script_name);
+                } else {
+                    eprintln!("❌ 📜 {} [console.error]: {}", script_name, message);
+                }
+            });
+        }
+
+        // Register console.debug
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("console_debug", move |message: &str| {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.debug_script(LogSource::Rhai(script_name.clone()), &format!("[console.debug] {}", message), &script_name);
+                } else {
+                    println!("🔍 📜 {} [console.debug]: {}", script_name, message);
+                }
+            });
+        }
+
+        // Register log function (alias for print)
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("log", move |message: &str| -> String {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.info_script(LogSource::Rhai(script_name.clone()), message, &script_name);
+                } else {
+                    println!("📜 {}: {}", script_name, message);
+                }
+                message.to_string() // Return the message
+            });
+        }
+
+        // Register void versions of print functions (when return value is not used)
+        {
+            let script_name_clone = script_name.clone();
+            engine.register_fn("print_void", move |message: &str| {
+                let script_name = script_name_clone.lock().unwrap().clone();
+                if let Some(logger) = get_logger() {
+                    logger.info_script(LogSource::Rhai(script_name.clone()), message, &script_name);
+                } else {
+                    println!("📜 {}: {}", script_name, message);
+                }
+            });
+        }
+    }
+
     /// Register advanced mathematical functions with the Rhai engine
     fn register_math_functions(engine: &mut Engine) {
         println!("🟣 RhaiScriptRunner: Registering advanced mathematical functions");
@@ -484,6 +609,12 @@ impl RhaiScriptRunner {
 
     /// Execute a Rhai script with logging context
     pub fn run_script_with_name(&self, script_content: &str, script_name: &str) -> Result<(), Box<EvalAltResult>> {
+        // Set the current script name for logging functions
+        {
+            let mut current_name = self.current_script_name.lock().unwrap();
+            *current_name = script_name.to_string();
+        }
+        
         let mut scope = Scope::new();
         
         // Log script start
@@ -504,10 +635,17 @@ impl RhaiScriptRunner {
                 Ok(())
             },
             Err(e) => {
+                // Enhanced error logging with more details
+                let error_msg = format!("Script execution failed: {} | Error details: line {}, position {}", 
+                    e, 
+                    e.position().line().unwrap_or(0), 
+                    e.position().position().unwrap_or(0)
+                );
+                
                 if let Some(logger) = get_logger() {
-                    logger.error_script(LogSource::Rhai(script_name.to_string()), &format!("Script execution failed: {}", e), script_name);
+                    logger.error_script(LogSource::Rhai(script_name.to_string()), &error_msg, script_name);
                 } else {
-                    eprintln!("❌ RhaiScriptRunner: Script execution failed: {}: {}", script_name, e);
+                    eprintln!("❌ RhaiScriptRunner: {}: {}", script_name, error_msg);
                 }
                 Err(e)
             }
