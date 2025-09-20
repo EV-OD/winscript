@@ -31,7 +31,7 @@ for file_info in log_files {
 if log_options.is_empty() {
     console_warn("No log files found in directory");
     render_html("<div style='text-align: center; padding: 2rem;'><h3>No Log Files</h3><p>No .log files found in the logs directory.</p></div>");
-    return "No log files found";
+    return;
 }
 
 print("📋 Found " + log_options.len() + " log files");
@@ -44,7 +44,7 @@ let selection = ask_select("Select a log file to view:", log_options);
 
 if selection == "" {
     print("❌ No selection made");
-    return "No selection made";
+    return;
 }
 
 // Extract the actual filename from the selection (remove size info)
@@ -69,7 +69,7 @@ let log_file_path = path_join(logs_dir, log_filename);
 if !file_exists(log_file_path) {
     console_error("Selected log file does not exist: " + log_file_path);
     render_html("<div style='text-align: center; padding: 2rem;'><h3>File Not Found</h3><p>The selected log file could not be found.</p></div>");
-    return "Log file not found: " + log_file_path;
+    return;
 }
 
 // Read the log file content
@@ -79,7 +79,7 @@ let log_content = read_file(log_file_path);
 if log_content == "" {
     console_warn("Log file is empty or could not be read");
     render_html("<div style='text-align: center; padding: 2rem;'><h3>Empty File</h3><p>The selected log file is empty or could not be read.</p></div>");
-    return "Log file is empty or unreadable";
+    return;
 }
 
 // Count lines in log
