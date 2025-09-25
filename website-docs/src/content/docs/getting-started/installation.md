@@ -13,11 +13,7 @@ Get SnapRun up and running on your Windows system in just a few minutes.
 - **Windows**: Windows 10 version 1809 or later (64-bit)
 - **RAM**: 4GB minimum, 8GB recommended
 - **Storage**: 500MB free disk space
-- **.NET**: Framework 4.7.2 or later (usually pre-installed)
 
-### Recommended Requirements
-- **RAM**: 8GB or more for optimal performance
-- **Storage**: 1GB for application and script storage
 
 ## Download SnapRun
 
@@ -93,28 +89,6 @@ For developers who want to build SnapRun from source:
    .\build_production.bat
    ```
 
-## First Launch Setup
-
-When you first launch SnapRun, you'll be guided through a quick setup:
-
-### 1. Welcome Screen
-- Overview of SnapRun features
-- Link to documentation
-
-### 2. Script Directory Setup
-- Choose where to store your scripts
-- Option to import existing scripts
-- Default location: `%USERPROFILE%\SnapRun\Scripts`
-
-### 3. Environment Configuration
-- Configure default settings
-- Choose theme (Light/Dark/Auto)
-- Set up keyboard shortcuts
-
-### 4. Sample Scripts
-- Option to install sample scripts
-- Includes examples for each function category
-
 ## Verification
 
 To verify your installation is working correctly:
@@ -123,45 +97,11 @@ To verify your installation is working correctly:
 2. **Create a new script**
 3. **Enter this test code**:
    ```rust
-   print("Hello, SnapRun!");
    let result = 2 + 3;
-   print("2 + 3 = " + result);
+   md("2 + 3 = " + result);
    ```
 4. **Run the script**
 5. **Check the output** - you should see the printed messages
-
-## Updating SnapRun
-
-SnapRun includes automatic update checking:
-
-- **Automatic**: Updates are checked on startup
-- **Manual**: Help → Check for Updates
-- **Settings**: Configure update preferences in Settings → General
-
-## Troubleshooting
-
-### Common Issues
-
-#### **Windows: "Windows protected your PC" warning**
-This is normal for new applications. Click "More info" → "Run anyway"
-
-#### **macOS: "App can't be opened because it is from an unidentified developer"**
-Go to System Preferences → Security & Privacy → Allow the app
-
-#### **Linux: Permission denied**
-Make sure the AppImage is executable: `chmod +x SnapRun.AppImage`
-
-#### **Script directory not accessible**
-Check folder permissions and ensure the directory exists
-
-### Getting Help
-
-If you encounter issues:
-
-1. **Check** the [FAQ section](/getting-started/faq)
-2. **Review** system requirements
-3. **Update** to the latest version
-4. **Report** bugs on our GitHub issues page
 
 ## What's Next?
 
@@ -169,8 +109,6 @@ Now that SnapRun is installed, you're ready to:
 
 1. **[Quick Start Guide](/getting-started/quick-start)** - Write your first script
 2. **[Function Reference](/ui-functions/ask_input)** - Explore available functions
-3. **[Example Scripts]** - Learn from practical examples
-
 ---
 
 *Ready to automate? Let's get scripting!*

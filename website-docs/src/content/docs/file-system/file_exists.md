@@ -1,6 +1,5 @@
 ---
-title: ""file_exists"
-"
+title: "file_exists"
 description: "Check if files or directories exist at specified paths"
 ---
 

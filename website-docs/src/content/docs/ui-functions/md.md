@@ -1,6 +1,5 @@
 ---
-title: ""md"
-"
+title: "md"
 description: "Render Markdown content with automatic formatting and styling"
 ---
 

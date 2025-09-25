@@ -1,6 +1,5 @@
 ---
-title: ""timestamp"
-"
+title: "timestamp"
 description: "Get current system timestamp in milliseconds since Unix epoch"
 ---
 
