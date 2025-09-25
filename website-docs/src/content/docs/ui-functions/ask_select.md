@@ -43,9 +43,6 @@ ask_select(message, options)
 ## Example
 
 ```rust
-let priority = ask_select("Select priority:", ["High", "Medium", "Low"]);
-render_html("<p>Selected priority: <strong>" + priority + "</strong></p>");
-
 let actions = ["Create File", "Read File", "Delete File", "Exit"];
 let choice = ask_select("Choose action:", actions);
 

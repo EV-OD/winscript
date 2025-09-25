@@ -84,11 +84,47 @@ export default defineConfig({
 				{
 					label: 'File System',
 					items: [
-						{ label: 'Create Directory', slug: 'file-system/create_dir' },
-						{ label: 'File Exists', slug: 'file-system/file_exists' },
-						{ label: 'Get Home Directory', slug: 'file-system/get_home_dir' },
-						{ label: 'Read File', slug: 'file-system/read_file' },
-						{ label: 'Write File', slug: 'file-system/write_file' },
+						{
+							label: 'Files',
+							items: [
+								{ label: 'Read File', slug: 'file-system/read_file' },
+								{ label: 'Write File', slug: 'file-system/write_file' },
+								{ label: 'Append File', slug: 'file-system/append_file' },
+								{ label: 'Copy File', slug: 'file-system/copy_file' },
+								{ label: 'Move File', slug: 'file-system/move_file' },
+								{ label: 'Remove File', slug: 'file-system/remove_file' },
+								{ label: 'File Size', slug: 'file-system/file_size' },
+								{ label: 'File Exists', slug: 'file-system/file_exists' },
+							],
+						},
+						{
+							label: 'Directories',
+							items: [
+								{ label: 'Create Directory', slug: 'file-system/create_dir' },
+								{ label: 'Create Directory (All)', slug: 'file-system/create_dir_all' },
+								{ label: 'Remove Directory', slug: 'file-system/remove_dir' },
+								{ label: 'Remove Directory (All)', slug: 'file-system/remove_dir_all' },
+								{ label: 'Directory Exists', slug: 'file-system/dir_exists' },
+								{ label: 'List Directory', slug: 'file-system/list_dir' },
+							],
+						},
+						{
+							label: 'Paths',
+							items: [
+								{ label: 'Join', slug: 'file-system/path_join' },
+								{ label: 'Parent', slug: 'file-system/path_parent' },
+								{ label: 'Filename', slug: 'file-system/path_filename' },
+								{ label: 'Extension', slug: 'file-system/path_extension' },
+							],
+						},
+						{
+							label: 'Special Dirs',
+							items: [
+								{ label: 'Home Directory', slug: 'file-system/get_home_dir' },
+								{ label: 'Temp Directory', slug: 'file-system/temp_dir' },
+								{ label: 'Current Directory', slug: 'file-system/current_dir' },
+							],
+						},
 					],
 				},
 				{

@@ -36,19 +36,18 @@ read_file(file_path)
 ## Example
 
 ```rust
-// Read configuration file
-if file_exists("config.json") {
-    let config_text = read_file("config.json");
-    let config = parse_json(config_text);
-    info("Loaded config: " + config.app_name);
-} else {
-    info("Config file not found");
-}
+// Demo: read_file(path)
+// What this script should do:
+// 1) Create a file with content, then read and print it.
+// 2) Render the content as HTML at the end.
+let base = path_join(temp_dir(), "fs_kit_demo_read_file");
+create_dir_all(base);
+let file = path_join(base, "note.txt");
+write_file(file, "hello");
+print(read_file(file));
 
-// Read script template
-let template = read_file("templates/basic_script.rhai");
-let custom_script = template.replace("{{PROJECT_NAME}}", "MyProject");
-write_file("generated_script.rhai", custom_script);
+let content = read_file(file);
+render_html("<p><strong>Read content:</strong> " + content + "</p>");
 ```
 
 
