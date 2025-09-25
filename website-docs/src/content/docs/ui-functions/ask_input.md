@@ -19,45 +19,29 @@ ask_input(message)
 |-----------|------|-------------|
 | `message` | `string` | The question or instruction to display to the user |
 
-**Note**: Based on the actual Rust implementation, `ask_input()` takes only one parameter - the message string. There is no placeholder parameter.
+**Note**: If you press enter without typing anything(Space is also treated as empty), the dialog will stay open and not continue. You must enter some text to proceed.
+
 
 ## Return Value
 
 - **Type**: `string`
 - **Content**: The text entered by the user
-- **Empty**: Returns empty string if user cancels or provides no input
 
 ## Basic Examples
 
 ### Simple Text Input
 ```rust
 let name = ask_input("What's your name?");
-if name != "" {
-    render_html("<h3>Hello, " + name + "!</h3><p>Welcome to SnapRun.</p>");
-} else {
-    render_html("<h3>Hello, Anonymous User!</h3>");
-}
+render_html("<h3>Hello, " + name + "!</h3><p>Welcome to SnapRun.</p>");
 ```
 
-### File Creation
-```rust
-let filename = ask_input("Enter filename:");
-if filename == "" {
-    filename = "document.txt";  // Use default if empty
-}
-render_html("<p>✅ Creating file: <strong>" + filename + "</strong></p>");
-```
 
 ### Input Validation
 ```rust
 let email = ask_input("Enter your email address:");
 
-while email == "" || !email.contains("@") {
-    if email == "" {
-        email = ask_input("Email cannot be empty. Please enter your email:");
-    } else {
-        email = ask_input("Please enter a valid email address (must contain @):");
-    }
+while !email.contains("@") {
+    email = ask_input("Please enter a valid email address (must contain @):");
 }
 
 render_html("<p>✅ Email registered: <strong>" + email + "</strong></p>");
