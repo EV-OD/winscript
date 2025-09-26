@@ -150,7 +150,14 @@ export default defineConfig({
 				{
 					label: 'Process Control',
 					items: [
-						{ label: 'Process Functions', slug: 'process-control/process-functions' },
+						{ label: 'When to use each function', slug: 'process-control/choosing-process-functions' },
+						{ label: 'run_command', slug: 'process-control/run_command' },
+						{ label: 'run_command_with_args', slug: 'process-control/run_command_with_args' },
+						{ label: 'exec_command', slug: 'process-control/exec_command' },
+						{ label: 'shell_command', slug: 'process-control/shell_command' },
+						{ label: 'spawn_process', slug: 'process-control/spawn_process' },
+						{ label: 'which_command', slug: 'process-control/which_command' },
+						{ label: 'command_exists', slug: 'process-control/command_exists' },
 					],
 				},
 				{
