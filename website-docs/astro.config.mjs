@@ -157,6 +157,16 @@ export default defineConfig({
 					label: 'Math Functions',
 					items: [
 						{ label: 'Math Operations', slug: 'math-functions/math-operations' },
+						{ label: 'Constants', slug: 'math-functions/math_constants' },
+						{ label: 'Trigonometry', slug: 'math-functions/math_trig' },
+						{ label: 'Hyperbolic', slug: 'math-functions/math_hyperbolic' },
+						{ label: 'Logs & Exponentials', slug: 'math-functions/math_logs_exp' },
+						{ label: 'Powers & Roots', slug: 'math-functions/math_power_root' },
+						{ label: 'Rounding', slug: 'math-functions/math_rounding' },
+						{ label: 'Statistics', slug: 'math-functions/math_stats' },
+						{ label: 'Geometry', slug: 'math-functions/math_geometry' },
+						{ label: 'Finance', slug: 'math-functions/math_finance' },
+						{ label: 'Quadratic & Distance', slug: 'math-functions/math_quadratic_distance' },
 					],
 				},
 				{

@@ -11,3 +11,4 @@
 + Add fetch function and web related API
 + Add new input tool name ask_file, ask_folder
 + Add better string formatting methods
++ A app draggable from bottom bar also 
