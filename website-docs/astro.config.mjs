@@ -54,7 +54,6 @@ export default defineConfig({
 					},
 				},
 				defaultProps: {
-					showLineNumbers: false,
 					wrap: true,
 				},
 			},
