@@ -1,11 +1,11 @@
 ---
 title: "info"
-description: "Output informational messages to SnapRun's console and log system"
+description: "Log an informational message"
 ---
 
-# info Function
+# info
 
-Output informational messages to SnapRun's console and log system.
+Log an informational message to the console.
 
 ## Syntax
 
@@ -13,21 +13,16 @@ Output informational messages to SnapRun's console and log system.
 info(message)
 ```
 
-## Parameters
+## Example
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `message` | `string` | Yes | The informational message to log |
+```rust
+let msg = "Informational message from info()";
+info(msg);
 
-## Return Value
+print("[info] sent=" + msg);
 
-- **Type**: `()` (unit/void)
-- **Output**: Message written to log file only (not visible in UI)
-- **Logging**: Message saved to application logs with INFO level
-
-## Implementation Details
-
-- **Internal Function**: Registered via Rhai engine with script name context
+render_html("<h3>info Demo</h3><pre>info: " + msg + "</pre>");
+```
 - **Logging Level**: Uses `LogLevel::Info` in the logging system
 - **Format**: `ℹ️ 📜 {script_name}: {message}` (when no logger available)
 

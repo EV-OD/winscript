@@ -134,12 +134,25 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Logging',
+					label: 'String Utilities',
 					items: [
-						{ label: 'Info', slug: 'logging/info' },
-						{ label: 'Print', slug: 'logging/print' },
+						{ label: 'format_str', slug: 'string-utilities/format_str' },
 					],
 				},
+				{
+				label: 'Logging',
+				items: [
+					{ label: 'info', slug: 'logging/info' },
+					{ label: 'print', slug: 'logging/print' },
+					{ label: 'println', slug: 'logging/println' },
+					{ label: 'log', slug: 'logging/log' },
+					{ label: 'print_void', slug: 'logging/print_void' },
+					{ label: 'console_log', slug: 'logging/console_log' },
+					{ label: 'console_error', slug: 'logging/console_error' },
+					{ label: 'console_warn', slug: 'logging/console_warn' },
+					{ label: 'console_debug', slug: 'logging/console_debug' },
+				],
+			},
 				{
 					label: 'Math Functions',
 					items: [

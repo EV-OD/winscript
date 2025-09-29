@@ -1,11 +1,11 @@
 ---
 title: "print"
-description: "Output messages to SnapRun's console with simple formatting"
+description: "Log a message and return the same string"
 ---
 
-# print Function
+# print
 
-Output messages to SnapRun's console with simple formatting.
+Log a message to console and return the same string.
 
 ## Syntax
 
@@ -13,20 +13,17 @@ Output messages to SnapRun's console with simple formatting.
 print(message)
 ```
 
-## Parameters
+## Example
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `message` | `string` | Yes | The message to output to console |
+```rust
+let msg = "Hello from print()";
+let returned = print(msg);
 
-## Return Value
+print("[print] sent=" + msg);
+print("[print] returned=" + returned);
 
-- **Type**: `string`
-- **Content**: Returns the same message that was printed
-- **Output**: Message written to log file only (not visible in UI)
-- **Format**: `📜 {script_name}: {message}`
-
-## Implementation Details
+render_html("<h3>print Demo</h3><pre>sent: " + msg + "\nreturned: " + returned + "</pre>");
+```
 
 - **Internal Function**: Registered via Rhai engine with script name context
 - **Logging Integration**: Uses Logger service if available, falls back to println!
